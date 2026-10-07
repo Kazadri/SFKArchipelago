@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SuperFantasyKingdom;
@@ -14,10 +15,23 @@ namespace SfkArchipelago
     public class Plugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
+        internal static ConfigEntry<string> ServerHost = null!;
+        internal static ConfigEntry<int> ServerPort = null!;
+        internal static ConfigEntry<string> SlotName = null!;
+        internal static ConfigEntry<string> Password = null!;
         
         private void Awake()
         {
             gameObject.hideFlags = HideFlags.HideAndDontSave;
+            
+            ServerHost = Config.Bind("Archipelago", "Host", "localhost",
+                "Archipelago server address");
+            ServerPort = Config.Bind("Archipelago", "Port", 38281,
+                "Port number");
+            SlotName = Config.Bind("Archipelago", "SlotName", "Player1",
+                "Slot name (field 'name' of the YAML)");
+            Password = Config.Bind("Archipelago", "Password", "",
+                "Archipelago password (leave blank if there are none)");
             
             Log = Logger;
             Logger.LogInfo("Start loading Kazadri SFK Archipelago");
@@ -75,7 +89,7 @@ namespace SfkArchipelago
         {
             try
             {
-                ArchipelagoClient.Connect("localhost", 38281, "Kazadri");
+                ArchipelagoClient.Connect(ServerHost.Value, ServerPort.Value, SlotName.Value, Password.Value);
             }
             catch (Exception e)
             {

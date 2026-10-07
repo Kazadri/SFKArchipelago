@@ -17,14 +17,13 @@ namespace SfkArchipelago
         private static bool _goalSent;
         internal static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
 
-        internal static void Connect(string host, int port, string slotName)
+        internal static void Connect(string host, int port, string slotName, string password)
         {
             Session = ArchipelagoSessionFactory.CreateSession(host, port);
             Session.Items.ItemReceived += OnItemReceived;
-            
 
             LoginResult result = Session.TryConnectAndLogin(
-                "Super Fantasy Kingdom", slotName, ItemsHandlingFlags.AllItems);
+                "Super Fantasy Kingdom", slotName, ItemsHandlingFlags.AllItems, password: password);
 
             if (result is LoginSuccessful success)
             {
