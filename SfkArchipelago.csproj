@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="Local.props" Condition="Exists('Local.props')" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="0Harmony">
+            <HintPath>$(GameDir)\BepInEx\core\0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="BepInEx">
+            <HintPath>$(GameDir)\BepInEx\core\BepInEx.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\Assembly-CSharp.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.1" />
+    </ItemGroup>
+
+    <Target Name="CopyToGame" AfterTargets="Build">
+        <ItemGroup>
+            <PluginFiles Include="@(ReferenceCopyLocalPaths)"
+                         Condition="'%(Filename)' != 'Newtonsoft.Json'" />
+        </ItemGroup>
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\BepInEx\plugins" />
+        <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(GameDir)\BepInEx\plugins" />
+    </Target>
+</Project>
