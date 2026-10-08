@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
-using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
 using Archipelago.MultiClient.Net.Helpers;
-using SuperFantasyKingdom;
 
 
 namespace SfkArchipelago
@@ -30,6 +27,8 @@ namespace SfkArchipelago
         
         internal static bool EnforceUnlocks =>
             _state == ConnectionState.Connecting || _state == ConnectionState.Connected;
+        
+        internal static readonly ConcurrentQueue<string> Notifications = new ConcurrentQueue<string>();
 
         internal static void StartConnect(string host, int port, string slotName, string password)
         {
@@ -135,6 +134,7 @@ namespace SfkArchipelago
                 if (value >= 1 && value <= 19)
                 {
                     UnlockedBuildings[(int)value] = 0;
+                    Notifications.Enqueue($"Bâtiment débloqué : {item.ItemName}");
                     Plugin.Log.LogInfo($"Bâtiment débloqué : {item.ItemName}");
                 }
                 else

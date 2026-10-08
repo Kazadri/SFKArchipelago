@@ -5,9 +5,8 @@ using HarmonyLib;
 using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
 using System;
-using Archipelago.MultiClient.Net;
-using Archipelago.MultiClient.Net.Enums;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace SfkArchipelago
 {
@@ -46,6 +45,10 @@ namespace SfkArchipelago
             Logger.LogInfo("Plugin loaded.");
             
             ConnectToArchipelago();
+            
+            //DEBUG
+            SceneManager.sceneLoaded += (scene, mode) =>
+                Logger.LogInfo($"Scene loaded: {scene.name} ({mode}) frame = {Time.frameCount}");
         }
 
         private void OnDestroy()
@@ -55,7 +58,31 @@ namespace SfkArchipelago
             
             Logger.LogInfo("Plugin destroyed.");
         }
-        
+
+        private void Update()
+        {
+            try
+            {
+                HandleNotification();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e.ToString());
+            }
+        }
+
+        private void HandleNotification()
+        {
+            // AlertManager is not yet instanced, we cannot send notification.
+            if (AlertManager.Instance == null) return;
+            
+            while (ArchipelagoClient.Notifications.TryDequeue(out var message))
+            {
+                AlertManager.Instance.DisplayMessage("Archipelago notification", message);
+                Logger.LogInfo($"[Notification] {message} frame={Time.frameCount}");
+            }
+        }
+
         private void HandleBuildingBuilt(BuildingCity building, bool flag)
         {
             try
@@ -76,7 +103,7 @@ namespace SfkArchipelago
         {
             try
             {
-                Logger.LogInfo($"OnMorningStart: {day}");
+                Logger.LogInfo($"OnMorningStart: {day} frame={Time.frameCount}");
                 if (day >= DaytimeManager.Instance.GetDayLimit()) ArchipelagoClient.CompleteGoal();
             }
             catch (Exception e)
