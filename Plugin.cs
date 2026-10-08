@@ -89,7 +89,7 @@ namespace SfkArchipelago
         {
             try
             {
-                ArchipelagoClient.Connect(ServerHost.Value, ServerPort.Value, SlotName.Value, Password.Value);
+                ArchipelagoClient.StartConnect(ServerHost.Value, ServerPort.Value, SlotName.Value, Password.Value);
             }
             catch (Exception e)
             {

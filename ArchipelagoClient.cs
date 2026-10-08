@@ -1,57 +1,115 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
 using Archipelago.MultiClient.Net.Helpers;
+using SuperFantasyKingdom;
 
 
 namespace SfkArchipelago
 {
+    internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
         private const long BaseId = 7_300_000;
         
-        internal static ArchipelagoSession? Session;
-        internal static bool Connected;
+        private static readonly object Sync = new object();
+        private static volatile ConnectionState _state = ConnectionState.Disconnected;
         private static bool _goalSent;
+        
         internal static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
+        
+        internal static ArchipelagoSession? Session;
+        internal static volatile string LastError = "";
 
-        internal static void Connect(string host, int port, string slotName, string password)
+        internal static ConnectionState State => _state;
+        
+        internal static bool EnforceUnlocks =>
+            _state == ConnectionState.Connecting || _state == ConnectionState.Connected;
+
+        internal static void StartConnect(string host, int port, string slotName, string password)
         {
-            Session = ArchipelagoSessionFactory.CreateSession(host, port);
-            Session.Items.ItemReceived += OnItemReceived;
-
-            LoginResult result = Session.TryConnectAndLogin(
-                "Super Fantasy Kingdom", slotName, ItemsHandlingFlags.AllItems, password: password);
-
-            if (result is LoginSuccessful success)
+            lock (Sync)
             {
-                Connected = true;
-                Plugin.Log.LogInfo($"Connecté à Archipelago (slot {success.Slot})");
+                if (ConnectionState.Connecting == _state || ConnectionState.Connected == _state)
+                {
+                    return;
+                }
+                
+                _state = ConnectionState.Connecting;
+                LastError = "";
             }
-            else if (result is LoginFailure failure)
+
+            Task.Run(() => ConnectWorker(host, port, slotName, password));
+        }
+
+        private static void ConnectWorker(string host, int port, string slotName, string password)
+        {
+            try
             {
-                Plugin.Log.LogError("Connexion refusée : " + string.Join(", ", failure.Errors));
+                var session = ArchipelagoSessionFactory.CreateSession(host, port);
+                session.Items.ItemReceived += OnItemReceived;
+                session.Socket.SocketClosed += OnSockedClosed;
+                
+                LoginResult result = session.TryConnectAndLogin(
+                    "Super Fantasy Kingdom", slotName, ItemsHandlingFlags.AllItems,
+                    password: string.IsNullOrEmpty(password) ? null : password);
+                
+                if (result is LoginSuccessful success)
+                {
+                    Session = session;
+                    _state = ConnectionState.Connected;
+                    Plugin.Log.LogInfo($"Connecté à Archipelago (slot {success.Slot})");
+                }
+                else if (result is LoginFailure failure)
+                {
+                    Fail("Connexion refusée : " + string.Join(", ", failure.Errors));
+                }
+            }
+            catch (Exception e)
+            {
+                // Sur un Task.Run, une exception non attrapée disparaît en silence.
+                Fail("Erreur de connexion : " + e.Message);
+                Plugin.Log.LogError(e.ToString());
             }
         }
-        
+
+        private static void Fail(string message)
+        {
+            LastError = message;
+            _state = ConnectionState.Failed;
+            Plugin.Log.LogError(message);
+        }
+
+        private static void OnSockedClosed(string reason)
+        {
+            if (ConnectionState.Connected != _state) return;
+
+            _state = ConnectionState.Disconnected;
+            Session = null;
+            Plugin.Log.LogWarning($"Connexion perdue : {reason}");
+        }
+
         internal static void SendBuildingCheck(BuildingType type)
         {
             int value = (int)type;
             if (value < 1 || value > 19) return;
 
-            if (null == Session)
+            var session = Session;
+            if (session == null || _state != ConnectionState.Connected)
             {
-                Plugin.Log.LogWarning("No Archipelago session found, the check is ignored");
+                Plugin.Log.LogWarning($"Check Build {type} non envoyé : pas connecté");
                 return;
             }
-            
-            long locationId = BaseId + value;
-            Session.Locations.CompleteLocationChecks(locationId);
-            Plugin.Log.LogInfo($"Check envoyé : Build {type} ({locationId})");
-        }
 
+            session.Locations.CompleteLocationChecks(BaseId + value);
+            Plugin.Log.LogInfo($"Check envoyé : Build {type} ({BaseId + value})");
+        }
+        
         internal static bool IsBuildingUnlocked(BuildingType type)
         {
             return UnlockedBuildings.ContainsKey((int)type);
@@ -59,20 +117,21 @@ namespace SfkArchipelago
 
         internal static void CompleteGoal()
         {
-            if (_goalSent || !Connected || null == Session) return;
-            
-            Session.SetGoalAchieved();
+            var session = Session;
+            if (_goalSent || session == null || _state != ConnectionState.Connected) return;
+
             _goalSent = true;
-            Plugin.Log.LogInfo("Goal achieved, sent to server.");
+            session.SetGoalAchieved();
+            Plugin.Log.LogInfo("Objectif atteint, envoyé au serveur");
         }
-        
+
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             while (helper.Any())
             {
                 var item = helper.DequeueItem();
                 long value = item.ItemId - BaseId;
-
+        
                 if (value >= 1 && value <= 19)
                 {
                     UnlockedBuildings[(int)value] = 0;
