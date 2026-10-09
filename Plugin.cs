@@ -19,7 +19,7 @@ namespace SfkArchipelago
         internal static ConfigEntry<string> SlotName = null!;
         internal static ConfigEntry<string> Password = null!;
         
-        internal static bool _runVisible = false;
+        internal static bool RunVisible = false;
         
         private void Awake()
         {
@@ -48,10 +48,6 @@ namespace SfkArchipelago
             Logger.LogInfo("Plugin loaded.");
             
             ConnectToArchipelago();
-            
-            //DEBUG
-            SceneManager.sceneLoaded += (scene, mode) =>
-                Logger.LogInfo($"Scene loaded: {scene.name} ({mode}) frame = {Time.frameCount}");
         }
 
         private void OnDestroy()
@@ -81,7 +77,7 @@ namespace SfkArchipelago
             if (AlertManager.Instance == null) return;
 
             // I can only show notification in a run yet, so display before is useless.
-            if (!_runVisible) return;
+            if (!RunVisible) return;
             
             while (ArchipelagoClient.Notifications.TryDequeue(out var message))
             {
@@ -111,7 +107,7 @@ namespace SfkArchipelago
             try
             {
                 Logger.LogInfo($"OnMorningStart: {day} frame={Time.frameCount}");
-                _runVisible  = true;
+                RunVisible  = true;
                 if (day >= DaytimeManager.Instance.GetDayLimit()) ArchipelagoClient.CompleteGoal();
             }
             catch (Exception e)
@@ -124,7 +120,7 @@ namespace SfkArchipelago
         {
             if ("GameScene" == scene.name)
             {
-                _runVisible = false;
+                RunVisible = false;
             }
         }
 
