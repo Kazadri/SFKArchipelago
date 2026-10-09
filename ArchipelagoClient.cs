@@ -13,7 +13,8 @@ namespace SfkArchipelago
     internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
-        private const long BaseId = 1_000_000;
+        private const long BuildingBaseId = 1_000_000;
+        private const long DailyBaseId = 1_001_000;
         
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
@@ -103,8 +104,21 @@ namespace SfkArchipelago
                 return;
             }
 
-            session.Locations.CompleteLocationChecks(BaseId + value);
-            Plugin.Log.LogInfo($"Check sent : Build {type} ({BaseId + value})");
+            session.Locations.CompleteLocationChecks(BuildingBaseId + value);
+            Plugin.Log.LogInfo($"Check sent : Build {type} ({BuildingBaseId + value})");
+        }
+
+        internal static void SendDailyCheck(int day)
+        {
+            var session = _session;
+            if (session == null || !IsConnected())
+            {
+                Plugin.Log.LogWarning($"Check Daily {day} could not be sent");
+                return;
+            }
+            
+            session.Locations.CompleteLocationChecks(DailyBaseId + day);
+            Plugin.Log.LogInfo($"Check sent : Day complete ({DailyBaseId + day})");
         }
 
         internal static bool IsBuildingManaged(BuildingType type)
@@ -142,7 +156,7 @@ namespace SfkArchipelago
             while (helper.Any())
             {
                 var item = helper.DequeueItem();
-                var value = item.ItemId - BaseId;
+                var value = item.ItemId - BuildingBaseId;
         
                 if (IsBuildingManaged((BuildingType)value))
                 {
@@ -153,7 +167,7 @@ namespace SfkArchipelago
                 else
                 {
                     Plugin.Log.LogInfo(
-                        $"Item received (not implemented) : {item.ItemName} | id={item.ItemId} | base={BaseId} | value={value}");
+                        $"Item received (not implemented) : {item.ItemName} | id={item.ItemId} | base={BuildingBaseId} | value={value}");
                 }
             }
         }

@@ -95,7 +95,16 @@ namespace SfkArchipelago
             {
                 Logger.LogInfo($"OnMorningStart: {day}");
                 RunVisible  = true;
-                if (day >= DaytimeManager.Instance.GetDayLimit()) ArchipelagoClient.CompleteGoal();
+                if (day >= DaytimeManager.Instance.GetDayLimit())
+                {
+                    ArchipelagoClient.CompleteGoal();
+                    return;
+                }
+
+                if (day > 1)
+                {
+                    ArchipelagoClient.SendDailyCheck(day-1);
+                }
             }
             catch (Exception e)
             {
