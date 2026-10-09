@@ -118,7 +118,7 @@ namespace SfkArchipelago
         {
             var session = Session;
             if (_goalSent || session == null || _state != ConnectionState.Connected) return;
-
+            
             _goalSent = true;
             session.SetGoalAchieved();
             Plugin.Log.LogInfo("Objectif atteint, envoyé au serveur");

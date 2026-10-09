@@ -19,6 +19,8 @@ namespace SfkArchipelago
         internal static ConfigEntry<string> SlotName = null!;
         internal static ConfigEntry<string> Password = null!;
         
+        internal static bool _runVisible = false;
+        
         private void Awake()
         {
             gameObject.hideFlags = HideFlags.HideAndDontSave;
@@ -41,6 +43,7 @@ namespace SfkArchipelago
 
             CityManager.OnBuildingBuilt += HandleBuildingBuilt;
             DaytimeManager.OnMorningStart += OnMorningStart;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
             
             Logger.LogInfo("Plugin loaded.");
             
@@ -55,6 +58,7 @@ namespace SfkArchipelago
         {
             CityManager.OnBuildingBuilt -= HandleBuildingBuilt;
             DaytimeManager.OnMorningStart -= OnMorningStart;
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
             
             Logger.LogInfo("Plugin destroyed.");
         }
@@ -75,6 +79,9 @@ namespace SfkArchipelago
         {
             // AlertManager is not yet instanced, we cannot send notification.
             if (AlertManager.Instance == null) return;
+
+            // I can only show notification in a run yet, so display before is useless.
+            if (!_runVisible) return;
             
             while (ArchipelagoClient.Notifications.TryDequeue(out var message))
             {
@@ -104,11 +111,20 @@ namespace SfkArchipelago
             try
             {
                 Logger.LogInfo($"OnMorningStart: {day} frame={Time.frameCount}");
+                _runVisible  = true;
                 if (day >= DaytimeManager.Instance.GetDayLimit()) ArchipelagoClient.CompleteGoal();
             }
             catch (Exception e)
             {
                 Logger.LogError(e.ToString());
+            }
+        }
+
+        private void OnSceneUnloaded(Scene scene)
+        {
+            if ("GameScene" == scene.name)
+            {
+                _runVisible = false;
             }
         }
 
