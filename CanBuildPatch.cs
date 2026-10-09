@@ -10,9 +10,9 @@ namespace SfkArchipelago
         [HarmonyPostfix]
         public static void Postfix(BuildingType type, ref bool __result)
         {
-            if (ConnectionState.Connected != ArchipelagoClient.State) return;
+            if (!ArchipelagoClient.IsConnected()) return;
             
-            int value = (int)type;
+            var value = (int)type;
             if (value < 1 || value > 19) return;
 
             if (!ArchipelagoClient.IsBuildingUnlocked(type))

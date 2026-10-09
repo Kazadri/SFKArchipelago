@@ -18,29 +18,22 @@ namespace SfkArchipelago
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
         private static bool _goalSent;
         
-        internal static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
+        private static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
         
-        internal static ArchipelagoSession? Session;
-        internal static volatile string LastError = "";
+        private static ArchipelagoSession? _session;
 
-        internal static ConnectionState State => _state;
-        
-        internal static bool EnforceUnlocks =>
-            _state == ConnectionState.Connecting || _state == ConnectionState.Connected;
-        
         internal static readonly ConcurrentQueue<string> Notifications = new ConcurrentQueue<string>();
 
         internal static void StartConnect(string host, int port, string slotName, string password)
         {
             lock (Sync)
             {
-                if (ConnectionState.Connecting == _state || ConnectionState.Connected == _state)
+                if (IsConnecting() || IsConnected())
                 {
                     return;
                 }
                 
                 _state = ConnectionState.Connecting;
-                LastError = "";
             }
 
             Task.Run(() => ConnectWorker(host, port, slotName, password));
@@ -54,24 +47,24 @@ namespace SfkArchipelago
                 session.Items.ItemReceived += OnItemReceived;
                 session.Socket.SocketClosed += OnSockedClosed;
                 
-                LoginResult result = session.TryConnectAndLogin(
+                var result = session.TryConnectAndLogin(
                     "Super Fantasy Kingdom", slotName, ItemsHandlingFlags.AllItems,
                     password: string.IsNullOrEmpty(password) ? null : password);
-                
-                if (result is LoginSuccessful success)
+
+                switch (result)
                 {
-                    Session = session;
-                    _state = ConnectionState.Connected;
-                    Plugin.Log.LogInfo($"Connecté à Archipelago (slot {success.Slot})");
-                }
-                else if (result is LoginFailure failure)
-                {
-                    Fail("Connexion refusée : " + string.Join(", ", failure.Errors));
+                    case LoginSuccessful success:
+                        _session = session;
+                        _state = ConnectionState.Connected;
+                        Plugin.Log.LogInfo($"Connecté à Archipelago (slot {success.Slot})");
+                        break;
+                    case LoginFailure failure:
+                        Fail("Connexion refusée : " + string.Join(", ", failure.Errors));
+                        break;
                 }
             }
             catch (Exception e)
             {
-                // Sur un Task.Run, une exception non attrapée disparaît en silence.
                 Fail("Erreur de connexion : " + e.Message);
                 Plugin.Log.LogError(e.ToString());
             }
@@ -79,34 +72,33 @@ namespace SfkArchipelago
 
         private static void Fail(string message)
         {
-            LastError = message;
             _state = ConnectionState.Failed;
             Plugin.Log.LogError(message);
         }
 
         private static void OnSockedClosed(string reason)
         {
-            if (ConnectionState.Connected != _state) return;
+            if (!IsConnected()) return;
 
             _state = ConnectionState.Disconnected;
-            Session = null;
-            Plugin.Log.LogWarning($"Connexion perdue : {reason}");
+            _session = null;
+            Plugin.Log.LogWarning($"Lost connection : {reason}");
         }
 
         internal static void SendBuildingCheck(BuildingType type)
         {
-            int value = (int)type;
+            var value = (int)type;
             if (value < 1 || value > 19) return;
 
-            var session = Session;
-            if (session == null || _state != ConnectionState.Connected)
+            var session = _session;
+            if (session == null || !IsConnected())
             {
-                Plugin.Log.LogWarning($"Check Build {type} non envoyé : pas connecté");
+                Plugin.Log.LogWarning($"Check Build {type} could not be sent : not connected");
                 return;
             }
 
             session.Locations.CompleteLocationChecks(BaseId + value);
-            Plugin.Log.LogInfo($"Check envoyé : Build {type} ({BaseId + value})");
+            Plugin.Log.LogInfo($"Check sent : Build {type} ({BaseId + value})");
         }
         
         internal static bool IsBuildingUnlocked(BuildingType type)
@@ -116,12 +108,22 @@ namespace SfkArchipelago
 
         internal static void CompleteGoal()
         {
-            var session = Session;
-            if (_goalSent || session == null || _state != ConnectionState.Connected) return;
+            var session = _session;
+            if (_goalSent || null == session || !IsConnected()) return;
             
             _goalSent = true;
             session.SetGoalAchieved();
-            Plugin.Log.LogInfo("Objectif atteint, envoyé au serveur");
+            Plugin.Log.LogInfo("Goad achieved, sent to server");
+        }
+
+        internal static bool IsConnected()
+        {
+            return ConnectionState.Connected == _state;
+        }
+
+        internal static bool IsConnecting()
+        {
+            return ConnectionState.Connecting == _state;
         }
 
         private static void OnItemReceived(ReceivedItemsHelper helper)
@@ -129,18 +131,18 @@ namespace SfkArchipelago
             while (helper.Any())
             {
                 var item = helper.DequeueItem();
-                long value = item.ItemId - BaseId;
+                var value = item.ItemId - BaseId;
         
                 if (value >= 1 && value <= 19)
                 {
                     UnlockedBuildings[(int)value] = 0;
-                    Notifications.Enqueue($"Bâtiment débloqué : {item.ItemName}");
-                    Plugin.Log.LogInfo($"Bâtiment débloqué : {item.ItemName}");
+                    Notifications.Enqueue($"Building unlocked : {item.ItemName}");
+                    Plugin.Log.LogInfo($"Building unlocked : {item.ItemName}");
                 }
                 else
                 {
                     Plugin.Log.LogInfo(
-                        $"Item reçu (ignoré) : {item.ItemName} | id={item.ItemId} | base={BaseId} | value={value}");
+                        $"Item received (not implemented) : {item.ItemName} | id={item.ItemId} | base={BaseId} | value={value}");
                 }
             }
         }

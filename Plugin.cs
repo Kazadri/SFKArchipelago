@@ -14,33 +14,20 @@ namespace SfkArchipelago
     public class Plugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
-        internal static ConfigEntry<string> ServerHost = null!;
-        internal static ConfigEntry<int> ServerPort = null!;
-        internal static ConfigEntry<string> SlotName = null!;
-        internal static ConfigEntry<string> Password = null!;
-        
         internal static bool RunVisible = false;
         
         private void Awake()
         {
             gameObject.hideFlags = HideFlags.HideAndDontSave;
             
-            ServerHost = Config.Bind("Archipelago", "Host", "localhost",
-                "Archipelago server address");
-            ServerPort = Config.Bind("Archipelago", "Port", 38281,
-                "Port number");
-            SlotName = Config.Bind("Archipelago", "SlotName", "Player1",
-                "Slot name (field 'name' of the YAML)");
-            Password = Config.Bind("Archipelago", "Password", "",
-                "Archipelago password (leave blank if there are none)");
-            
             Log = Logger;
             Logger.LogInfo("Start loading Kazadri SFK Archipelago");
             
+            // Harmony patches
             new Harmony("kazadri.sfk.archipelago").PatchAll();
             Logger.LogInfo("Patches Harmony applied");
             
-
+            // Events
             CityManager.OnBuildingBuilt += HandleBuildingBuilt;
             DaytimeManager.OnMorningStart += OnMorningStart;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
@@ -49,7 +36,7 @@ namespace SfkArchipelago
             
             ConnectToArchipelago();
         }
-
+        
         private void OnDestroy()
         {
             CityManager.OnBuildingBuilt -= HandleBuildingBuilt;
@@ -70,7 +57,7 @@ namespace SfkArchipelago
                 Logger.LogError(e.ToString());
             }
         }
-
+        
         private void HandleNotification()
         {
             // AlertManager is not yet instanced, we cannot send notification.
@@ -82,7 +69,7 @@ namespace SfkArchipelago
             while (ArchipelagoClient.Notifications.TryDequeue(out var message))
             {
                 AlertManager.Instance.DisplayMessage("Archipelago notification", message);
-                Logger.LogInfo($"[Notification] {message} frame={Time.frameCount}");
+                Logger.LogInfo($"[Notification] {message}");
             }
         }
 
@@ -93,7 +80,7 @@ namespace SfkArchipelago
                 if (flag) return;
                 
                 var type = building.GetBuildingType();
-                Logger.LogInfo($"Construction : {type} ({(int)type})");
+                Logger.LogInfo($"Building : {type} ({(int)type}) is built");
                 ArchipelagoClient.SendBuildingCheck(type);
             }
             catch (Exception e)
@@ -106,7 +93,7 @@ namespace SfkArchipelago
         {
             try
             {
-                Logger.LogInfo($"OnMorningStart: {day} frame={Time.frameCount}");
+                Logger.LogInfo($"OnMorningStart: {day}");
                 RunVisible  = true;
                 if (day >= DaytimeManager.Instance.GetDayLimit()) ArchipelagoClient.CompleteGoal();
             }
@@ -116,7 +103,7 @@ namespace SfkArchipelago
             }
         }
 
-        private void OnSceneUnloaded(Scene scene)
+        private static void OnSceneUnloaded(Scene scene)
         {
             if ("GameScene" == scene.name)
             {
@@ -128,7 +115,12 @@ namespace SfkArchipelago
         {
             try
             {
-                ArchipelagoClient.StartConnect(ServerHost.Value, ServerPort.Value, SlotName.Value, Password.Value);
+                ArchipelagoClient.StartConnect(
+                    Config.Bind("Archipelago", "Host", "localhost", "Archipelago server address").Value,
+                    Config.Bind("Archipelago", "Port", 38281, "Port number").Value,
+                    Config.Bind("Archipelago", "SlotName", "Player1", "Slot name (field 'name' of the YAML)").Value,
+                    Config.Bind("Archipelago", "Password", "", "Archipelago password (leave blank if there are none)").Value
+                );
             }
             catch (Exception e)
             {
