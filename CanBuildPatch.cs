@@ -12,8 +12,7 @@ namespace SfkArchipelago
         {
             if (!ArchipelagoClient.IsConnected()) return;
             
-            var value = (int)type;
-            if (value < 1 || value > 19) return;
+            if (!ArchipelagoClient.IsBuildingManaged(type)) return;
 
             if (!ArchipelagoClient.IsBuildingUnlocked(type))
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
@@ -23,6 +24,11 @@ namespace SfkArchipelago
         private static ArchipelagoSession? _session;
 
         internal static readonly ConcurrentQueue<string> Notifications = new ConcurrentQueue<string>();
+        
+        private static readonly HashSet<int> ManagedBuildings = new HashSet<int>
+        {
+            1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,27,30,32,35,36,100
+        };
 
         internal static void StartConnect(string host, int port, string slotName, string password)
         {
@@ -88,7 +94,7 @@ namespace SfkArchipelago
         internal static void SendBuildingCheck(BuildingType type)
         {
             var value = (int)type;
-            if (value < 1 || value > 19) return;
+            if (!IsBuildingManaged(type)) return;
 
             var session = _session;
             if (session == null || !IsConnected())
@@ -99,6 +105,11 @@ namespace SfkArchipelago
 
             session.Locations.CompleteLocationChecks(BaseId + value);
             Plugin.Log.LogInfo($"Check sent : Build {type} ({BaseId + value})");
+        }
+
+        internal static bool IsBuildingManaged(BuildingType type)
+        {
+            return ManagedBuildings.Contains((int)type);
         }
         
         internal static bool IsBuildingUnlocked(BuildingType type)
@@ -133,7 +144,7 @@ namespace SfkArchipelago
                 var item = helper.DequeueItem();
                 var value = item.ItemId - BaseId;
         
-                if (value >= 1 && value <= 19)
+                if (IsBuildingManaged((BuildingType)value))
                 {
                     UnlockedBuildings[(int)value] = 0;
                     Notifications.Enqueue($"Building unlocked : {item.ItemName}");
