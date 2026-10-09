@@ -15,7 +15,7 @@ namespace SfkArchipelago
     internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
-        private const long BaseId = 7_300_000;
+        private const long BaseId = 1_000_000;
         
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
