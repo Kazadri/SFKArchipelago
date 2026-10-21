@@ -28,7 +28,7 @@ namespace SfkArchipelago
         
         private static readonly HashSet<int> ManagedBuildings = new HashSet<int>
         {
-            1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,27,30,32,35,36,100
+            1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,27,30,32,35,36,100,301,302,303,304,306,307,309,310,311,312,313,319,360,361,362,363,507,
         };
 
         internal static void StartConnect(string host, int port, string slotName, string password)
