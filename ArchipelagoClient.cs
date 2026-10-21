@@ -25,10 +25,52 @@ namespace SfkArchipelago
         private static ArchipelagoSession? _session;
 
         internal static readonly ConcurrentQueue<string> Notifications = new ConcurrentQueue<string>();
-        
-        private static readonly HashSet<int> ManagedBuildings = new HashSet<int>
+
+        private static readonly HashSet<BuildingType> ManagedBuildings = new HashSet<BuildingType>
         {
-            1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,27,30,32,35,36,100,301,302,303,304,306,307,309,310,311,312,313,319,360,361,362,363,507,
+            BuildingType.Wood,
+            BuildingType.Sawmill,
+            BuildingType.Well,
+            BuildingType.Quarry,
+            BuildingType.Farm,
+            BuildingType.Tavern,
+            BuildingType.Mine,
+            BuildingType.Smelter,
+            BuildingType.Port,
+            BuildingType.Hunter,
+            BuildingType.Windmill,
+            BuildingType.Brewery,
+            BuildingType.Siege,
+            BuildingType.House,
+            BuildingType.Stables,
+            BuildingType.Graveyard,
+            BuildingType.Portal,
+            BuildingType.Bakery,
+            BuildingType.Elemental,
+            BuildingType.GeologistHut,
+            BuildingType.Decoration,
+            BuildingType.Coins,
+            BuildingType.Forager,
+            BuildingType.Fisher,
+            BuildingType.KingdomHuman,
+            BuildingType.WorldWood,
+            BuildingType.WorldStone,
+            BuildingType.WorldWheat,
+            BuildingType.WorldOre,
+            BuildingType.WorldIngot,
+            BuildingType.WorldHunter,
+            BuildingType.WorldBanish,
+            BuildingType.WorldDifficulty,
+            BuildingType.WorldFaith,
+            BuildingType.WorldAppeal,
+            BuildingType.WorldRelic,
+            BuildingType.WorldUnit,
+            BuildingType.WorldCoins,
+            BuildingType.WorldBarracks,
+            BuildingType.WorldArchery,
+            BuildingType.WorldMages,
+            BuildingType.WorldSummoners,
+            BuildingType.WorldShards,
         };
 
         internal static void StartConnect(string host, int port, string slotName, string password)
@@ -123,7 +165,7 @@ namespace SfkArchipelago
 
         internal static bool IsBuildingManaged(BuildingType type)
         {
-            return ManagedBuildings.Contains((int)type);
+            return ManagedBuildings.Contains(type);
         }
         
         internal static bool IsBuildingUnlocked(BuildingType type)
