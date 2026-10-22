@@ -25,6 +25,18 @@
             <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.UI.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.TextMeshPro">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.Localization">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\Unity.Localization.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="Assembly-CSharp">
             <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\Assembly-CSharp.dll</HintPath>
             <Private>false</Private>
@@ -32,7 +44,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.1" />
+        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.1" />
+        <PackageReference Include="UnityEngine.IMGUIModule" Version="2020.3.1" />
     </ItemGroup>
 
     <Target Name="CopyToGame" AfterTargets="Build">

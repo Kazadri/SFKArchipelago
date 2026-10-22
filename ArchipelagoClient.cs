@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net;
+using SuperFantasyKingdom.Buildings;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Archipelago.MultiClient.Net;
-using Archipelago.MultiClient.Net.Enums;
-using SuperFantasyKingdom.Buildings;
-using Archipelago.MultiClient.Net.Helpers;
+using System;
 
 
 namespace SfkArchipelago
@@ -13,14 +14,17 @@ namespace SfkArchipelago
     internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
+        private enum ItemKind { Building, Upgrade, Unknow }
         private const long BuildingBaseId = 1_000_000;
         private const long DailyBaseId = 1_001_000;
+        private const long UpgradeBaseId = 1_002_000;
         
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
         private static bool _goalSent;
         
         private static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
+        private static readonly ConcurrentDictionary<int, byte> UnlockedUpgrades = new ConcurrentDictionary<int, byte>();
         
         private static ArchipelagoSession? _session;
 
@@ -72,6 +76,24 @@ namespace SfkArchipelago
             BuildingType.WorldSummoners,
             BuildingType.WorldShards,
         };
+
+        private static readonly HashSet<BuildingType> ManagedUpgrades = new HashSet<BuildingType>
+        {
+            BuildingType.Wood,
+            BuildingType.Well,
+            BuildingType.Quarry,
+            BuildingType.Farm,
+            BuildingType.Tavern,
+            BuildingType.Mine,
+            BuildingType.Port,
+            BuildingType.Hunter,
+            BuildingType.House,
+            BuildingType.GeologistHut,
+            BuildingType.Decoration,
+            BuildingType.Forager,
+            BuildingType.Fisher,
+        };
+        
 
         internal static void StartConnect(string host, int port, string slotName, string password)
         {
@@ -173,6 +195,16 @@ namespace SfkArchipelago
             return UnlockedBuildings.ContainsKey((int)type);
         }
 
+        internal static bool IsUpgradeManaged(BuildingType type)
+        {
+            return ManagedUpgrades.Contains(type);
+        }
+        
+        internal static bool IsUpgradeUnlocked(BuildingType type)
+        {
+            return false;
+        }
+
         internal static void CompleteGoal()
         {
             var session = _session;
@@ -198,20 +230,51 @@ namespace SfkArchipelago
             while (helper.Any())
             {
                 var item = helper.DequeueItem();
-                var value = item.ItemId - BuildingBaseId;
-        
-                if (IsBuildingManaged((BuildingType)value))
+                
+                switch (ResolveItemKind(item.ItemId))
                 {
-                    UnlockedBuildings[(int)value] = 0;
-                    Notifications.Enqueue($"Building unlocked : {item.ItemName}");
-                    Plugin.Log.LogInfo($"Building unlocked : {item.ItemName}");
-                }
-                else
-                {
-                    Plugin.Log.LogInfo(
-                        $"Item received (not implemented) : {item.ItemName} | id={item.ItemId} | base={BuildingBaseId} | value={value}");
-                }
+                    case ItemKind.Building:
+                        HandleBuildingItem(item);
+                        break;
+                    case ItemKind.Upgrade:
+                        HandleUpgradeItem(item);
+                        break;
+                    default:
+                        Plugin.Log.LogInfo(
+                            $"Item received (not implemented) : {item.ItemName} | id={item.ItemId}");
+                        break;
+                };
             }
+        }
+
+        private static void HandleBuildingItem(ItemInfo item)
+        {
+            var value = item.ItemId - BuildingBaseId;
+            
+            if (!IsBuildingManaged((BuildingType)value)) return;
+            
+            UnlockedBuildings[(int)value] = 0;
+            Notifications.Enqueue($"Building unlocked : {item.ItemName}");
+            Plugin.Log.LogInfo($"Building unlocked : {item.ItemName}");
+        }
+        
+        private static void HandleUpgradeItem(ItemInfo item)
+        {
+            var value = item.ItemId - UpgradeBaseId;
+            
+            if (!IsUpgradeManaged((BuildingType)value)) return;
+            
+            UnlockedUpgrades[(int)value] = 0;
+            Notifications.Enqueue($"Upgrade unlocked : {item.ItemName}");
+            Plugin.Log.LogInfo($"Upgrade unlocked : {item.ItemName}");
+        }
+
+        private static ItemKind ResolveItemKind(long itemId)
+        {
+            if (itemId >= UpgradeBaseId) return ItemKind.Upgrade;
+            if (itemId >= BuildingBaseId) return ItemKind.Building;
+
+            return ItemKind.Unknow;
         }
     }
 }
