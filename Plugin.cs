@@ -24,8 +24,10 @@ namespace SfkArchipelago
             Logger.LogInfo("Start loading Kazadri SFK Archipelago");
             
             // Harmony patches
-            new Harmony("kazadri.sfk.archipelago").PatchAll();
-            Logger.LogInfo("Patches Harmony applied");
+            var harmony = new Harmony("kazadri.sfk.archipelago");
+            harmony.PatchAll();
+            foreach (var m in harmony.GetPatchedMethods())
+                Log.LogInfo($"Patched: {m.DeclaringType}.{m.Name}");
             
             // Events
             CityManager.OnBuildingBuilt += HandleBuildingBuilt;

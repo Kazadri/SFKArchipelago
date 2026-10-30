@@ -7,6 +7,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using SfkArchipelago.Roads;
+using SuperFantasyKingdom;
 
 
 namespace SfkArchipelago
@@ -14,10 +16,11 @@ namespace SfkArchipelago
     internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
-        private enum ItemKind { Building, Upgrade, Unknow }
+        private enum ItemKind { Building, Upgrade, Road, Unknow }
         private const long BuildingBaseId = 1_000_000;
         private const long DailyBaseId = 1_001_000;
         private const long UpgradeBaseId = 1_002_000;
+        private const long RoadBaseId = 1_003_000;
         
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
@@ -239,6 +242,9 @@ namespace SfkArchipelago
                     case ItemKind.Upgrade:
                         HandleUpgradeItem(item);
                         break;
+                    case ItemKind.Road:
+                        HandleRoadItem(item);
+                        break;
                     default:
                         Plugin.Log.LogInfo(
                             $"Item received (not implemented) : {item.ItemName} | id={item.ItemId}");
@@ -269,8 +275,26 @@ namespace SfkArchipelago
             Plugin.Log.LogInfo($"Upgrade unlocked : {item.ItemName}");
         }
 
+        private static void HandleRoadItem(ItemInfo item)
+        {
+            if (!Enum.IsDefined(typeof(RoadGroup), (int)item.ItemId))
+            {
+                Plugin.Log.LogWarning($"Unknown road item id {item.ItemId} ({item.ItemName})");
+                return;
+            }
+            
+            var group = (RoadGroup)(int)item.ItemId;
+
+            RoadUnlocks.IncrementLevel(group);
+            
+            Notifications.Enqueue($"New road unlocked: {group.ToString()}");
+            Plugin.Log.LogInfo($"New road unlocked: {group.ToString()}");
+        }
+
         private static ItemKind ResolveItemKind(long itemId)
         {
+            if (itemId >= 2_000_000) return ItemKind.Unknow;
+            if (itemId >= RoadBaseId) return ItemKind.Road;
             if (itemId >= UpgradeBaseId) return ItemKind.Upgrade;
             if (itemId >= BuildingBaseId) return ItemKind.Building;
 

@@ -25,6 +25,10 @@
             <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="UnityEngine.TilemapModule">
+            <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.TilemapModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="UnityEngine.UI">
             <HintPath>$(GameDir)\Super Fantasy Kingdom_Data\Managed\UnityEngine.UI.dll</HintPath>
             <Private>false</Private>
