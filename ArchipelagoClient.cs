@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using SfkArchipelago.Roads;
-using SuperFantasyKingdom;
+using Hero = SfkArchipelago.Heroes.Hero;
 
 
 namespace SfkArchipelago
@@ -16,11 +16,12 @@ namespace SfkArchipelago
     internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
-        private enum ItemKind { Building, Upgrade, Road, Unknow }
+        private enum ItemKind { Building, Upgrade, Road, Hero, Unknow }
         private const long BuildingBaseId = 1_000_000;
-        private const long DailyBaseId = 1_001_000;
         private const long UpgradeBaseId = 1_002_000;
         private const long RoadBaseId = 1_003_000;
+        private const long HeroBaseId = 1_004_000;
+        private const long DailyBaseId = 1_005_000;
         
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
@@ -28,6 +29,7 @@ namespace SfkArchipelago
         
         private static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
         private static readonly ConcurrentDictionary<int, byte> UnlockedUpgrades = new ConcurrentDictionary<int, byte>();
+        private static readonly ConcurrentDictionary<int, byte> UnlockedHeroes = new ConcurrentDictionary<int, byte>();
         
         private static ArchipelagoSession? _session;
 
@@ -205,7 +207,17 @@ namespace SfkArchipelago
         
         internal static bool IsUpgradeUnlocked(BuildingType type)
         {
-            return false;
+            return false; //TODO
+        }
+
+        internal static bool IsHeroManaged(Hero hero)
+        {
+            return true; // All heroes are managed
+        }
+
+        internal static bool IsHeroUnlocked(Hero hero)
+        {
+            return UnlockedHeroes.ContainsKey((int)hero);
         }
 
         internal static void CompleteGoal()
@@ -244,6 +256,9 @@ namespace SfkArchipelago
                         break;
                     case ItemKind.Road:
                         HandleRoadItem(item);
+                        break;
+                    case ItemKind.Hero:
+                        HandleHeroItem(item);
                         break;
                     default:
                         Plugin.Log.LogInfo(
@@ -291,9 +306,25 @@ namespace SfkArchipelago
             Plugin.Log.LogInfo($"New road unlocked: {group.ToString()}");
         }
 
+        private static void HandleHeroItem(ItemInfo item)
+        {
+            var value = item.ItemId - HeroBaseId;
+            
+            if (!Enum.IsDefined(typeof(Hero), (int)value))
+            {
+                Plugin.Log.LogWarning($"Unknown hero item id {item.ItemId} ({item.ItemName})");
+                return;
+            }
+            
+            UnlockedHeroes[(int)value] = 0;
+            Notifications.Enqueue($"Unlocked hero: {item.ItemName}");
+            Plugin.Log.LogInfo($"Unlocked hero: {item.ItemName}");
+        }
+
         private static ItemKind ResolveItemKind(long itemId)
         {
             if (itemId >= 2_000_000) return ItemKind.Unknow;
+            if (itemId >= HeroBaseId) return ItemKind.Hero;
             if (itemId >= RoadBaseId) return ItemKind.Road;
             if (itemId >= UpgradeBaseId) return ItemKind.Upgrade;
             if (itemId >= BuildingBaseId) return ItemKind.Building;

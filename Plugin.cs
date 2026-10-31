@@ -1,12 +1,14 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
 using System;
+using SfkArchipelago.Races;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Hero = SfkArchipelago.Heroes.Hero;
+using Race = SfkArchipelago.Races.Race;
 
 namespace SfkArchipelago
 {
@@ -95,17 +97,20 @@ namespace SfkArchipelago
         {
             try
             {
-                Logger.LogInfo($"OnMorningStart: {day}");
+                Enum.TryParse(typeof(Hero), MainManager.Instance.GetSelectedHero(), out var hero);
+                RaceMapper.TryFromGame(MainManager.Instance.GetSelectedKingdom(), out var race);
+                
+                Logger.LogInfo($"OnMorningStart: {day} on {Enum.GetName(typeof(Race), race)} - {Enum.GetName(typeof(Hero), hero)}");
                 RunVisible  = true;
-                if (day >= DaytimeManager.Instance.GetDayLimit())
-                {
-                    ArchipelagoClient.CompleteGoal();
-                    return;
-                }
+                // if (day >= DaytimeManager.Instance.GetDayLimit())
+                // {
+                //     ArchipelagoClient.CompleteGoal();
+                //     return;
+                // }
 
                 if (day > 1)
                 {
-                    ArchipelagoClient.SendDailyCheck(day-1);
+                    ArchipelagoClient.SendDailyCheck(((int)race*308) + ((int)hero*28) + day-1);
                 }
             }
             catch (Exception e)
