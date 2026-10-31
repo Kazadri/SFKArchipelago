@@ -38,7 +38,6 @@ namespace SfkArchipelago.Roads
             {
                 var state = kv.Value;
                 int level = Volatile.Read(ref state.Level);
-                Plugin.Log.LogInfo($"Applying {level} {kv.Key} roads ({state.Order.Length})");
 
                 for (int i = 0; i < level && i < state.Order.Length; i++)
                 {

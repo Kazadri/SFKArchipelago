@@ -90,18 +90,11 @@ public static class RoadSorter
                     .ThenBy(n => n.Index)
                     .First();
                 
-                Plugin.Log.LogInfo(
-                    $"[{group}] #{result.Count} arr={next.Index} {next.Road.Id} start={next.Start} " +
-                    $"glory={next.Road.requiredGlory} kLvl={next.Road.requiredKingdomLevel} " +
-                    $"parents=[{(next.Parents.Count == 0 ? "ROOT" : string.Join(",", next.Parents.Select(p => p.Road.Id.Substring(0, 8))))}]");
-                
                 placed.Add(next);
                 result.Add(next);
                 remaining.Remove(next);
             }
             
-            Plugin.Log.LogInfo($"{group} road populated, {result.Count} found");
-
             return result.Select(n => n.Road.Id).ToArray();
         }
         
