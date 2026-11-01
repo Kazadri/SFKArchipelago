@@ -4,27 +4,10 @@ using SuperFantasyKingdom.UI;
 using TMPro;
 using UnityEngine;
 
-namespace SfkArchipelago
+namespace SfkArchipelago.Buildings.Patches
 {
-    [HarmonyPatch(typeof(Building), nameof(Building.CanBeUpgraded))]
-    public class CanUpgradePatch
-    {
-        [HarmonyPostfix]
-        public static void Postfix(Building __instance, ref bool __result) {
-            if (!ArchipelagoClient.IsConnected()) return;
-
-            var type = __instance.GetBuildingType();
-            
-            if (!ArchipelagoClient.IsUpgradeManaged(type)) return;
-            
-            Plugin.Log.LogInfo($"CanBeUpgraded called for {type}");
-
-            __result = ArchipelagoClient.IsUpgradeUnlocked(type);
-        }
-    }
-    
     [HarmonyPatch(typeof(UIBuildingOverlayElementUpgrade), nameof(UIBuildingOverlayElementUpgrade.Draw))]
-    public class DrawPatch
+    public class DisableUpgradeButtonPatch
     {
         [HarmonyPostfix]
         public static void PostFix(
@@ -53,6 +36,6 @@ namespace SfkArchipelago
             message.gameObject.SetActive(true);
             var text = message.GetComponent<TextMeshProUGUI>();
             text.text = "This upgrade has not been unlocked yet (Archipelago).";
-        } 
+        }
     }
 }

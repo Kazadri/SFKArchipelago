@@ -2,7 +2,7 @@
 using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
 
-namespace SfkArchipelago
+namespace SfkArchipelago.Buildings.Patches
 {
     [HarmonyPatch(typeof(CityManager), nameof(CityManager.CanBuild))]
     public static class CanBuildPatch
