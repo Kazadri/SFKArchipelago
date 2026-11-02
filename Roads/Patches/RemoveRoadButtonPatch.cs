@@ -10,6 +10,6 @@ namespace SfkArchipelago.Roads.Patches
         public static bool Prefix(Road road)
         {
             return !RoadUnlocks.IsManaged(road.Id);
-        } 
+        }
     }
 }

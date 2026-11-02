@@ -19,20 +19,26 @@ namespace SfkArchipelago.Races
                     return false;
             }
         }
-        
-        public static Race FromGame(SuperFantasyKingdom.Races gameRace) => gameRace switch
+
+        public static Race FromGame(SuperFantasyKingdom.Races gameRace)
         {
-            SuperFantasyKingdom.Races.Human => Race.Human,
-            SuperFantasyKingdom.Races.Undead => Race.Undead,
-            _ => throw new ArgumentOutOfRangeException(nameof(gameRace), gameRace, "Race not playable")
-        };
-        
-        public static SuperFantasyKingdom.Races ToGame(this Race race) => race switch
+            return gameRace switch
+            {
+                SuperFantasyKingdom.Races.Human => Race.Human,
+                SuperFantasyKingdom.Races.Undead => Race.Undead,
+                _ => throw new ArgumentOutOfRangeException(nameof(gameRace), gameRace, "Race not playable")
+            };
+        }
+
+        public static SuperFantasyKingdom.Races ToGame(this Race race)
         {
-            Race.Human => SuperFantasyKingdom.Races.Human,
-            Race.Undead => SuperFantasyKingdom.Races.Undead,
-            _ => throw new ArgumentOutOfRangeException(nameof(race))
-        };
+            return race switch
+            {
+                Race.Human => SuperFantasyKingdom.Races.Human,
+                Race.Undead => SuperFantasyKingdom.Races.Undead,
+                _ => throw new ArgumentOutOfRangeException(nameof(race))
+            };
+        }
 
         public static Race CurrentRace()
         {

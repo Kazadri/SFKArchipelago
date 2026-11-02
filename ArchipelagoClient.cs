@@ -1,39 +1,51 @@
-﻿using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Helpers;
-using Archipelago.MultiClient.Net.Models;
-using Archipelago.MultiClient.Net;
-using SuperFantasyKingdom.Buildings;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System;
+using Archipelago.MultiClient.Net;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.Models;
 using SfkArchipelago.Pedestals;
 using SfkArchipelago.Roads;
+using SuperFantasyKingdom.Buildings;
 using Hero = SfkArchipelago.Heroes.Hero;
 
 
 namespace SfkArchipelago
 {
-    internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
+    internal enum ConnectionState
+    {
+        Disconnected,
+        Connecting,
+        Connected,
+        Failed
+    }
+
     internal static class ArchipelagoClient
     {
-        private enum ItemKind { Building, Upgrade, Road, Hero, Pedestal, Unknow }
         private const long BuildingBaseId = 1_000_000;
         private const long UpgradeBaseId = 1_002_000;
         private const long RoadBaseId = 1_003_000;
         private const long HeroBaseId = 1_004_000;
         private const long DailyBaseId = 1_005_000;
         private const long PedestalBaseId = 1_006_000;
-        
+
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
         private static bool _goalSent;
-        
-        private static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
-        private static readonly ConcurrentDictionary<int, byte> UnlockedUpgrades = new ConcurrentDictionary<int, byte>();
+
+        private static readonly ConcurrentDictionary<int, byte> UnlockedBuildings =
+            new ConcurrentDictionary<int, byte>();
+
+        private static readonly ConcurrentDictionary<int, byte>
+            UnlockedUpgrades = new ConcurrentDictionary<int, byte>();
+
         private static readonly ConcurrentDictionary<int, byte> UnlockedHeroes = new ConcurrentDictionary<int, byte>();
-        private static readonly ConcurrentDictionary<int, byte> UnlockedPedestals = new ConcurrentDictionary<int, byte>();
-        
+
+        private static readonly ConcurrentDictionary<int, byte> UnlockedPedestals =
+            new ConcurrentDictionary<int, byte>();
+
         private static ArchipelagoSession? _session;
 
         internal static readonly ConcurrentQueue<string> Notifications = new ConcurrentQueue<string>();
@@ -82,7 +94,7 @@ namespace SfkArchipelago
             BuildingType.WorldArchery,
             BuildingType.WorldMages,
             BuildingType.WorldSummoners,
-            BuildingType.WorldShards,
+            BuildingType.WorldShards
         };
 
         private static readonly HashSet<BuildingType> ManagedUpgrades = new HashSet<BuildingType>
@@ -99,19 +111,16 @@ namespace SfkArchipelago
             BuildingType.GeologistHut,
             BuildingType.Decoration,
             BuildingType.Forager,
-            BuildingType.Fisher,
+            BuildingType.Fisher
         };
-        
+
 
         internal static void StartConnect(string host, int port, string slotName, string password)
         {
             lock (Sync)
             {
-                if (IsConnecting() || IsConnected())
-                {
-                    return;
-                }
-                
+                if (IsConnecting() || IsConnected()) return;
+
                 _state = ConnectionState.Connecting;
             }
 
@@ -125,7 +134,7 @@ namespace SfkArchipelago
                 var session = ArchipelagoSessionFactory.CreateSession(host, port);
                 session.Items.ItemReceived += OnItemReceived;
                 session.Socket.SocketClosed += OnSockedClosed;
-                
+
                 var result = session.TryConnectAndLogin(
                     "Super Fantasy Kingdom", slotName, ItemsHandlingFlags.AllItems,
                     password: string.IsNullOrEmpty(password) ? null : password);
@@ -188,7 +197,7 @@ namespace SfkArchipelago
                 Plugin.Log.LogWarning($"Check Daily {day} could not be sent");
                 return;
             }
-            
+
             session.Locations.CompleteLocationChecks(DailyBaseId + day);
             Plugin.Log.LogInfo($"Check sent : Day complete ({DailyBaseId + day})");
         }
@@ -197,7 +206,7 @@ namespace SfkArchipelago
         {
             return ManagedBuildings.Contains(type);
         }
-        
+
         internal static bool IsBuildingUnlocked(BuildingType type)
         {
             return UnlockedBuildings.ContainsKey((int)type);
@@ -207,7 +216,7 @@ namespace SfkArchipelago
         {
             return ManagedUpgrades.Contains(type);
         }
-        
+
         internal static bool IsUpgradeUnlocked(BuildingType type)
         {
             return false; //TODO
@@ -232,7 +241,7 @@ namespace SfkArchipelago
         {
             var session = _session;
             if (_goalSent || null == session || !IsConnected()) return;
-            
+
             _goalSent = true;
             session.SetGoalAchieved();
             Plugin.Log.LogInfo("Goad achieved, sent to server");
@@ -253,7 +262,7 @@ namespace SfkArchipelago
             while (helper.Any())
             {
                 var item = helper.DequeueItem();
-                
+
                 switch (ResolveItemKind(item.ItemId))
                 {
                     case ItemKind.Building:
@@ -275,27 +284,29 @@ namespace SfkArchipelago
                         Plugin.Log.LogInfo(
                             $"Item received (not implemented) : {item.ItemName} | id={item.ItemId}");
                         break;
-                };
+                }
+
+                ;
             }
         }
 
         private static void HandleBuildingItem(ItemInfo item)
         {
             var value = item.ItemId - BuildingBaseId;
-            
+
             if (!IsBuildingManaged((BuildingType)value)) return;
-            
+
             UnlockedBuildings[(int)value] = 0;
             Notifications.Enqueue($"Building unlocked : {item.ItemName}");
             Plugin.Log.LogInfo($"Building unlocked : {item.ItemName}");
         }
-        
+
         private static void HandleUpgradeItem(ItemInfo item)
         {
             var value = item.ItemId - UpgradeBaseId;
-            
+
             if (!IsUpgradeManaged((BuildingType)value)) return;
-            
+
             UnlockedUpgrades[(int)value] = 0;
             Notifications.Enqueue($"Upgrade unlocked : {item.ItemName}");
             Plugin.Log.LogInfo($"Upgrade unlocked : {item.ItemName}");
@@ -308,11 +319,11 @@ namespace SfkArchipelago
                 Plugin.Log.LogWarning($"Unknown road item id {item.ItemId} ({item.ItemName})");
                 return;
             }
-            
+
             var group = (RoadGroup)(int)item.ItemId;
 
             RoadUnlocks.IncrementLevel(group);
-            
+
             Notifications.Enqueue($"New road unlocked: {group.ToString()}");
             Plugin.Log.LogInfo($"New road unlocked: {group.ToString()}");
         }
@@ -320,13 +331,13 @@ namespace SfkArchipelago
         private static void HandleHeroItem(ItemInfo item)
         {
             var value = item.ItemId - HeroBaseId;
-            
+
             if (!Enum.IsDefined(typeof(Hero), (int)value))
             {
                 Plugin.Log.LogWarning($"Unknown hero item id {item.ItemId} ({item.ItemName})");
                 return;
             }
-            
+
             UnlockedHeroes[(int)value] = 0;
             Notifications.Enqueue($"Unlocked hero: {item.ItemName}");
             Plugin.Log.LogInfo($"Unlocked hero: {item.ItemName}");
@@ -335,7 +346,7 @@ namespace SfkArchipelago
         private static void HandlePedestalItem(ItemInfo item)
         {
             var value = item.ItemId - PedestalBaseId;
-            
+
             UnlockedPedestals[(int)value] = 0;
             Notifications.Enqueue($"Unlocked pedestal: {item.ItemName}");
             Plugin.Log.LogInfo($"Unlocked pedestal: {item.ItemName}");
@@ -351,6 +362,16 @@ namespace SfkArchipelago
             if (itemId >= BuildingBaseId) return ItemKind.Building;
 
             return ItemKind.Unknow;
+        }
+
+        private enum ItemKind
+        {
+            Building,
+            Upgrade,
+            Road,
+            Hero,
+            Pedestal,
+            Unknow
         }
     }
 }

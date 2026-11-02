@@ -14,7 +14,7 @@ namespace SfkArchipelago.Heroes.Patches
         public static void Postfix(ref List<string> __result)
         {
             if (!ArchipelagoClient.IsConnected()) return;
-            
+
             var heroes = new List<string>();
 
             __result = heroes;

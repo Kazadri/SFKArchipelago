@@ -12,17 +12,13 @@ namespace SfkArchipelago.Heroes.Patches
         public static void Postfix(ref List<string> __result)
         {
             if (!ArchipelagoClient.IsConnected()) return;
-            
+
             var heroes = new List<string>();
 
-            foreach (Hero hero in (Hero[]) Enum.GetValues(typeof(Hero)))
-            {
+            foreach (var hero in (Hero[])Enum.GetValues(typeof(Hero)))
                 if (ArchipelagoClient.IsHeroUnlocked(hero))
-                {
                     heroes.Add(Enum.GetName(typeof(Hero), hero));
-                }
-            }
-            
+
             __result = heroes;
         }
     }

@@ -3,15 +3,17 @@ using System.Linq;
 using HarmonyLib;
 using SfkArchipelago.Races;
 using SuperFantasyKingdom;
+using SuperFantasyKingdom.Clickable;
+using UnityEngine;
 
 namespace SfkArchipelago.Pedestals
 {
     public class PedestalUnlocks
     {
         public static bool InMagic;
-        
-        static readonly AccessTools.FieldRef<SuperFantasyKingdom.Clickable.BuildingSpotWorld, ResourceType> ResourceRef =
-            AccessTools.FieldRefAccess<SuperFantasyKingdom.Clickable.BuildingSpotWorld, ResourceType>("resource");
+
+        private static readonly AccessTools.FieldRef<BuildingSpotWorld, ResourceType> ResourceRef =
+            AccessTools.FieldRefAccess<BuildingSpotWorld, ResourceType>("resource");
 
         public static readonly List<Pedestal> All = new List<Pedestal>
         {
@@ -43,22 +45,22 @@ namespace SfkArchipelago.Pedestals
             new Pedestal("Wood4", 25, Race.Human),
             new Pedestal("Wood5", 26, Race.Human),
             new Pedestal("Wood6", 27, Race.Human),
-            new Pedestal("Wood7", 28, Race.Human),
+            new Pedestal("Wood7", 28, Race.Human)
         };
-        
-        static readonly Dictionary<(Race, string), Pedestal> ByKey =
+
+        private static readonly Dictionary<(Race, string), Pedestal> ByKey =
             All.ToDictionary(p => (p.Race, p.Name));
-        
+
         public static bool TryGet(Race race, string name, out Pedestal p)
-            => ByKey.TryGetValue((race, name), out p);
+        {
+            return ByKey.TryGetValue((race, name), out p);
+        }
 
         public static void SpawnAllUnlocked()
         {
-            foreach (var spot in UnityEngine.Object.FindObjectsOfType<SuperFantasyKingdom.Clickable.BuildingSpotWorld>())
-            {
+            foreach (var spot in Object.FindObjectsOfType<BuildingSpotWorld>())
                 if (TryGet(RaceUtils.CurrentRace(), spot.name, out var p) && ArchipelagoClient.IsPedestalUnlocked(p))
-                    WorldManager.Instance.SpawnRebuild(spot.transform.position, ResourceRef(spot), fromSave: true);
-            }
+                    WorldManager.Instance.SpawnRebuild(spot.transform.position, ResourceRef(spot), true);
         }
     }
 }

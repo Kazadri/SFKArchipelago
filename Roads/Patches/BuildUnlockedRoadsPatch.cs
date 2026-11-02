@@ -10,7 +10,7 @@ namespace SfkArchipelago.Roads.Patches
         public static bool Prefix()
         {
             RoadUnlocks.ApplyAll();
-            
+
             return false;
         }
     }

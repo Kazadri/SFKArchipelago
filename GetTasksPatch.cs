@@ -11,7 +11,7 @@ namespace SfkArchipelago
         public static void Postfix(ref Tutorial[] __result)
         {
             if (!ArchipelagoClient.IsConnected()) return;
-            
+
             Plugin.Log.LogInfo("Override GetTasks.Postfix");
             __result = Array.Empty<Tutorial>();
         }

@@ -12,6 +12,6 @@
         Rickard = 7,
         Selene = 8,
         Sheva = 9,
-        Thea = 10,
+        Thea = 10
     }
 }

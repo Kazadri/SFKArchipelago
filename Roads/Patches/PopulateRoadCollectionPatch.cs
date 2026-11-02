@@ -15,7 +15,10 @@ namespace SfkArchipelago.Roads.Patches
                 RoadUnlocks.SetOrder(RoadGroup.Overland, RoadSorter.Compute(___roadCollection, RoadGroup.Overland));
                 RoadUnlocks.SetOrder(RoadGroup.City, RoadSorter.Compute(___roadCollection, RoadGroup.City));
             }
-            catch (Exception e) { Plugin.Log.LogError(e); }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
         }
     }
 }

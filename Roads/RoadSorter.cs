@@ -5,34 +5,25 @@ using UnityEngine;
 
 namespace SfkArchipelago.Roads
 {
-public static class RoadSorter
+    public static class RoadSorter
     {
         private static readonly Vector2Int[] Dirs =
         {
             new Vector2Int(0, 1), new Vector2Int(1, 0),
-            new Vector2Int(0, -1), new Vector2Int(-1, 0),
+            new Vector2Int(0, -1), new Vector2Int(-1, 0)
         };
-
-        private class Node
-        {
-            public int Index;
-            public Road Road;
-            public Vector2Int Start;
-            public HashSet<Vector2Int> Tiles = new HashSet<Vector2Int>();
-            public List<Node> Parents= new List<Node>();
-        }
 
         public static RoadGroup GroupOf(Road road)
         {
-            return road.pier != null ? RoadGroup.Pier : road.city ?  RoadGroup.City : RoadGroup.Overland;
+            return road.pier != null ? RoadGroup.Pier : road.city ? RoadGroup.City : RoadGroup.Overland;
         }
 
         public static string[] Compute(Road[] roads, RoadGroup group)
         {
             var nodes = new List<Node>();
-            for (int i = 0; i < roads.Length; i++)
+            for (var i = 0; i < roads.Length; i++)
             {
-                var r =  roads[i];
+                var r = roads[i];
                 if (GroupOf(r) != group) continue;
 
                 if (r.parts == null || r.parts.Count == 0)
@@ -48,22 +39,17 @@ public static class RoadSorter
                     Start = Round(r.parts[0].Position)
                 };
 
-                foreach (var p in r.parts)
-                {
-                    n.Tiles.Add(Round(p.Position));
-                }
-                
+                foreach (var p in r.parts) n.Tiles.Add(Round(p.Position));
+
                 var last = r.parts[r.parts.Count - 1];
                 n.Tiles.Add(Round(last.Position) + Dirs[last.Direction % 4]);
                 nodes.Add(n);
             }
 
             foreach (var n in nodes)
-            {
                 n.Parents = nodes
                     .Where(p => p != n && p.Start != n.Start && p.Tiles.Contains(n.Start))
                     .ToList();
-            }
 
 
             var placed = new HashSet<Node>();
@@ -89,16 +75,27 @@ public static class RoadSorter
                     .ThenBy(n => n.Road.cost.amount)
                     .ThenBy(n => n.Index)
                     .First();
-                
+
                 placed.Add(next);
                 result.Add(next);
                 remaining.Remove(next);
             }
-            
+
             return result.Select(n => n.Road.Id).ToArray();
         }
-        
-        private static Vector2Int Round(Vector2 v) =>
-            new Vector2Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y));
+
+        private static Vector2Int Round(Vector2 v)
+        {
+            return new Vector2Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y));
+        }
+
+        private class Node
+        {
+            public int Index;
+            public List<Node> Parents = new List<Node>();
+            public Road Road;
+            public Vector2Int Start;
+            public readonly HashSet<Vector2Int> Tiles = new HashSet<Vector2Int>();
+        }
     }
 }

@@ -3,6 +3,6 @@
     public enum Race
     {
         Human = 0,
-        Undead = 1,
+        Undead = 1
     }
 }
