@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using SfkArchipelago.Pedestals;
 using SfkArchipelago.Roads;
 using Hero = SfkArchipelago.Heroes.Hero;
 
@@ -16,12 +17,13 @@ namespace SfkArchipelago
     internal enum ConnectionState { Disconnected, Connecting, Connected, Failed }
     internal static class ArchipelagoClient
     {
-        private enum ItemKind { Building, Upgrade, Road, Hero, Unknow }
+        private enum ItemKind { Building, Upgrade, Road, Hero, Pedestal, Unknow }
         private const long BuildingBaseId = 1_000_000;
         private const long UpgradeBaseId = 1_002_000;
         private const long RoadBaseId = 1_003_000;
         private const long HeroBaseId = 1_004_000;
         private const long DailyBaseId = 1_005_000;
+        private const long PedestalBaseId = 1_006_000;
         
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
@@ -30,6 +32,7 @@ namespace SfkArchipelago
         private static readonly ConcurrentDictionary<int, byte> UnlockedBuildings = new ConcurrentDictionary<int, byte>();
         private static readonly ConcurrentDictionary<int, byte> UnlockedUpgrades = new ConcurrentDictionary<int, byte>();
         private static readonly ConcurrentDictionary<int, byte> UnlockedHeroes = new ConcurrentDictionary<int, byte>();
+        private static readonly ConcurrentDictionary<int, byte> UnlockedPedestals = new ConcurrentDictionary<int, byte>();
         
         private static ArchipelagoSession? _session;
 
@@ -220,6 +223,11 @@ namespace SfkArchipelago
             return UnlockedHeroes.ContainsKey((int)hero);
         }
 
+        internal static bool IsPedestalUnlocked(Pedestal pedestal)
+        {
+            return UnlockedPedestals.ContainsKey(pedestal.Offset);
+        }
+
         internal static void CompleteGoal()
         {
             var session = _session;
@@ -259,6 +267,9 @@ namespace SfkArchipelago
                         break;
                     case ItemKind.Hero:
                         HandleHeroItem(item);
+                        break;
+                    case ItemKind.Pedestal:
+                        HandlePedestalItem(item);
                         break;
                     default:
                         Plugin.Log.LogInfo(
@@ -321,9 +332,19 @@ namespace SfkArchipelago
             Plugin.Log.LogInfo($"Unlocked hero: {item.ItemName}");
         }
 
+        private static void HandlePedestalItem(ItemInfo item)
+        {
+            var value = item.ItemId - PedestalBaseId;
+            
+            UnlockedPedestals[(int)value] = 0;
+            Notifications.Enqueue($"Unlocked pedestal: {item.ItemName}");
+            Plugin.Log.LogInfo($"Unlocked pedestal: {item.ItemName}");
+        }
+
         private static ItemKind ResolveItemKind(long itemId)
         {
             if (itemId >= 2_000_000) return ItemKind.Unknow;
+            if (itemId >= PedestalBaseId) return ItemKind.Pedestal;
             if (itemId >= HeroBaseId) return ItemKind.Hero;
             if (itemId >= RoadBaseId) return ItemKind.Road;
             if (itemId >= UpgradeBaseId) return ItemKind.Upgrade;

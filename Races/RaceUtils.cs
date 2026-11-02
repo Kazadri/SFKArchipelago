@@ -2,7 +2,7 @@
 
 namespace SfkArchipelago.Races
 {
-    public static class RaceMapper
+    public static class RaceUtils
     {
         public static bool TryFromGame(SuperFantasyKingdom.Races gameRace, out Race race)
         {
@@ -33,5 +33,10 @@ namespace SfkArchipelago.Races
             Race.Undead => SuperFantasyKingdom.Races.Undead,
             _ => throw new ArgumentOutOfRangeException(nameof(race))
         };
+
+        public static Race CurrentRace()
+        {
+            return FromGame(MainManager.Instance.GetSelectedKingdom());
+        }
     }
 }

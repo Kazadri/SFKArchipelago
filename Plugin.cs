@@ -98,7 +98,7 @@ namespace SfkArchipelago
             try
             {
                 Enum.TryParse(typeof(Hero), MainManager.Instance.GetSelectedHero(), out var hero);
-                RaceMapper.TryFromGame(MainManager.Instance.GetSelectedKingdom(), out var race);
+                Race race = RaceUtils.CurrentRace();
                 
                 Logger.LogInfo($"OnMorningStart: {day} on {Enum.GetName(typeof(Race), race)} - {Enum.GetName(typeof(Hero), hero)}");
                 RunVisible  = true;
