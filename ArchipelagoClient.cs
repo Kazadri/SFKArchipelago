@@ -30,6 +30,7 @@ namespace SfkArchipelago
         private const long HeroBaseId = 1_004_000;
         private const long DailyBaseId = 1_005_000;
         private const long PedestalBaseId = 1_006_000;
+        private const long WitchId = 1_007_000;
 
         private static readonly object Sync = new object();
         private static volatile ConnectionState _state = ConnectionState.Disconnected;
@@ -45,6 +46,8 @@ namespace SfkArchipelago
 
         private static readonly ConcurrentDictionary<int, byte> UnlockedPedestals =
             new ConcurrentDictionary<int, byte>();
+
+        private static int _witchLevel;
 
         private static ArchipelagoSession? _session;
 
@@ -237,6 +240,16 @@ namespace SfkArchipelago
             return UnlockedPedestals.ContainsKey(pedestal.Offset);
         }
 
+        internal static int WitchLevel()
+        {
+            return _witchLevel;
+        }
+
+        private static void IncrementWitchLevel()
+        {
+            ++_witchLevel;
+        }
+
         internal static void CompleteGoal()
         {
             var session = _session;
@@ -279,6 +292,9 @@ namespace SfkArchipelago
                         break;
                     case ItemKind.Pedestal:
                         HandlePedestalItem(item);
+                        break;
+                    case ItemKind.Witch:
+                        HandleWitchItem();
                         break;
                     default:
                         Plugin.Log.LogInfo(
@@ -352,9 +368,18 @@ namespace SfkArchipelago
             Plugin.Log.LogInfo($"Unlocked pedestal: {item.ItemName}");
         }
 
+        private static void HandleWitchItem()
+        {
+            IncrementWitchLevel();
+
+            Notifications.Enqueue($"Witch level unlocked: {WitchLevel().ToString()}");
+            Plugin.Log.LogInfo($"Witch level unlocked: {WitchLevel().ToString()}");
+        }
+
         private static ItemKind ResolveItemKind(long itemId)
         {
             if (itemId >= 2_000_000) return ItemKind.Unknow;
+            if (itemId == WitchId) return ItemKind.Witch;
             if (itemId >= PedestalBaseId) return ItemKind.Pedestal;
             if (itemId >= HeroBaseId) return ItemKind.Hero;
             if (itemId >= RoadBaseId) return ItemKind.Road;
@@ -371,6 +396,7 @@ namespace SfkArchipelago
             Road,
             Hero,
             Pedestal,
+            Witch,
             Unknow
         }
     }

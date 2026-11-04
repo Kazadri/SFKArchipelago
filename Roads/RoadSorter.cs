@@ -91,11 +91,11 @@ namespace SfkArchipelago.Roads
 
         private class Node
         {
+            public readonly HashSet<Vector2Int> Tiles = new HashSet<Vector2Int>();
             public int Index;
             public List<Node> Parents = new List<Node>();
             public Road Road;
             public Vector2Int Start;
-            public readonly HashSet<Vector2Int> Tiles = new HashSet<Vector2Int>();
         }
     }
 }
