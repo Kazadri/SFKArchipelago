@@ -8,8 +8,10 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using SfkArchipelago.Pedestals;
 using SfkArchipelago.Roads;
+using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
 using Hero = SfkArchipelago.Heroes.Hero;
+using ResourceManager = SfkArchipelago.Resources.ResourceManager;
 
 
 namespace SfkArchipelago
@@ -270,6 +272,11 @@ namespace SfkArchipelago
             return ConnectionState.Connecting == _state;
         }
 
+        public static void AddNotification(string message)
+        {
+            Notifications.Enqueue(message);
+        }
+
         private static void OnItemReceived(ReceivedItemsHelper helper)
         {
             while (helper.Any())
@@ -296,6 +303,9 @@ namespace SfkArchipelago
                     case ItemKind.Witch:
                         HandleWitchItem();
                         break;
+                    case ItemKind.Filler:
+                        HandleFillerItem(item);
+                        break;
                     default:
                         Plugin.Log.LogInfo(
                             $"Item received (not implemented) : {item.ItemName} | id={item.ItemId}");
@@ -306,6 +316,14 @@ namespace SfkArchipelago
             }
         }
 
+        private static void HandleFillerItem(ItemInfo item)
+        {
+            var type = ResourceManager.NameToType(item.ItemName);
+            if (null == type) return;
+
+            ResourceManager.AddResource((ResourceType)type);
+        }
+
         private static void HandleBuildingItem(ItemInfo item)
         {
             var value = item.ItemId - BuildingBaseId;
@@ -313,7 +331,7 @@ namespace SfkArchipelago
             if (!IsBuildingManaged((BuildingType)value)) return;
 
             UnlockedBuildings[(int)value] = 0;
-            Notifications.Enqueue($"Building unlocked : {item.ItemName}");
+            AddNotification($"Building unlocked : {item.ItemName}");
             Plugin.Log.LogInfo($"Building unlocked : {item.ItemName}");
         }
 
@@ -324,7 +342,7 @@ namespace SfkArchipelago
             if (!IsUpgradeManaged((BuildingType)value)) return;
 
             UnlockedUpgrades[(int)value] = 0;
-            Notifications.Enqueue($"Upgrade unlocked : {item.ItemName}");
+            AddNotification($"Upgrade unlocked : {item.ItemName}");
             Plugin.Log.LogInfo($"Upgrade unlocked : {item.ItemName}");
         }
 
@@ -340,7 +358,7 @@ namespace SfkArchipelago
 
             RoadUnlocks.IncrementLevel(group);
 
-            Notifications.Enqueue($"New road unlocked: {group.ToString()}");
+            AddNotification($"New road unlocked: {group.ToString()}");
             Plugin.Log.LogInfo($"New road unlocked: {group.ToString()}");
         }
 
@@ -355,7 +373,7 @@ namespace SfkArchipelago
             }
 
             UnlockedHeroes[(int)value] = 0;
-            Notifications.Enqueue($"Unlocked hero: {item.ItemName}");
+            AddNotification($"Unlocked hero: {item.ItemName}");
             Plugin.Log.LogInfo($"Unlocked hero: {item.ItemName}");
         }
 
@@ -364,7 +382,7 @@ namespace SfkArchipelago
             var value = item.ItemId - PedestalBaseId;
 
             UnlockedPedestals[(int)value] = 0;
-            Notifications.Enqueue($"Unlocked pedestal: {item.ItemName}");
+            AddNotification($"Unlocked pedestal: {item.ItemName}");
             Plugin.Log.LogInfo($"Unlocked pedestal: {item.ItemName}");
         }
 
@@ -372,13 +390,14 @@ namespace SfkArchipelago
         {
             IncrementWitchLevel();
 
-            Notifications.Enqueue($"Witch level unlocked: {WitchLevel().ToString()}");
+            AddNotification($"Witch level unlocked: {WitchLevel().ToString()}");
             Plugin.Log.LogInfo($"Witch level unlocked: {WitchLevel().ToString()}");
         }
 
         private static ItemKind ResolveItemKind(long itemId)
         {
-            if (itemId >= 2_000_000) return ItemKind.Unknow;
+            if (itemId >= 3_000_000) return ItemKind.Unknow;
+            if (itemId >= 2_000_000) return ItemKind.Filler;
             if (itemId == WitchId) return ItemKind.Witch;
             if (itemId >= PedestalBaseId) return ItemKind.Pedestal;
             if (itemId >= HeroBaseId) return ItemKind.Hero;
@@ -397,6 +416,7 @@ namespace SfkArchipelago
             Hero,
             Pedestal,
             Witch,
+            Filler,
             Unknow
         }
     }
