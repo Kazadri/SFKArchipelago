@@ -9,7 +9,9 @@ namespace SfkArchipelago.Roads.Patches
         [HarmonyPostfix]
         public static void Postfix(string road, ref bool __result)
         {
-            if (RoadUnlocks.IsManaged(road)) __result = RoadUnlocks.IsGranted(road);
+            if (!ArchipelagoClient.IsConnected()) return;
+
+            if (RoadManager.IsManaged(road)) __result = RoadManager.IsGranted(road);
         }
     }
 }

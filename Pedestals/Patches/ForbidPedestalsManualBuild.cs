@@ -9,6 +9,8 @@ namespace SfkArchipelago.Pedestals.Patches
     {
         private static bool Prefix(ClickableSprite __instance)
         {
+            if (!ArchipelagoClient.IsConnected()) return true;
+
             //TODO: Maybe open a dialogue explaining why the player can't do that.
             return !(__instance is BuildingSpotWorld instance && BuildingSize.WorldSmall == instance.size);
         }

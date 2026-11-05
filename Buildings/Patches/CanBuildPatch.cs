@@ -12,9 +12,9 @@ namespace SfkArchipelago.Buildings.Patches
         {
             if (!ArchipelagoClient.IsConnected()) return;
 
-            if (!ArchipelagoClient.IsBuildingManaged(type)) return;
+            if (!BuildingManager.IsManaged(type)) return;
 
-            if (!ArchipelagoClient.IsBuildingUnlocked(type)) __result = false;
+            if (!BuildingManager.IsUnlocked(type)) __result = false;
         }
     }
 }

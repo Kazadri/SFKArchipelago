@@ -16,7 +16,7 @@ namespace SfkArchipelago.Heroes.Patches
             var heroes = new List<string>();
 
             foreach (var hero in (Hero[])Enum.GetValues(typeof(Hero)))
-                if (ArchipelagoClient.IsHeroUnlocked(hero))
+                if (HeroManager.IsUnlocked(hero))
                     heroes.Add(Enum.GetName(typeof(Hero), hero));
 
             __result = heroes;

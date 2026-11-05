@@ -9,7 +9,9 @@ namespace SfkArchipelago.Roads.Patches
         [HarmonyPrefix]
         public static bool Prefix()
         {
-            RoadUnlocks.ApplyAll();
+            if (!ArchipelagoClient.IsConnected()) return true;
+
+            RoadManager.ApplyAll();
 
             return false;
         }

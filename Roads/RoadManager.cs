@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Archipelago.MultiClient.Net.Models;
 using SuperFantasyKingdom;
 
 namespace SfkArchipelago.Roads
 {
-    public static class RoadUnlocks
+    internal static class RoadManager
     {
         private static readonly Dictionary<RoadGroup, RoadGroupState> Groups = new Dictionary<RoadGroup, RoadGroupState>
         {
@@ -69,6 +70,26 @@ namespace SfkArchipelago.Roads
                 for (var i = 0; i < kv.Value.Order.Length; i++)
                     lookup[kv.Value.Order[i]] = (kv.Key, i);
             _lookup = lookup;
+        }
+
+        internal static void Handle(ItemInfo item)
+        {
+            var group = (RoadGroup)(int)item.ItemId;
+            if (!Groups.ContainsKey(group))
+            {
+                Plugin.Log.LogWarning($"Unknown road item id {item.ItemId} ({item.ItemName})");
+                return;
+            }
+
+            IncrementLevel(group);
+            ArchipelagoClient.AddNotification($"New road unlocked: {group}");
+            Plugin.Log.LogInfo($"New road unlocked: {group}");
+        }
+
+        internal static void Reset()
+        {
+            foreach (var state in Groups.Values)
+                Volatile.Write(ref state.Level, 0);
         }
 
         private class RoadGroupState

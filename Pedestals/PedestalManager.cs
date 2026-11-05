@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using Archipelago.MultiClient.Net.Models;
 using HarmonyLib;
 using SfkArchipelago.Races;
 using SuperFantasyKingdom;
@@ -8,14 +10,17 @@ using UnityEngine;
 
 namespace SfkArchipelago.Pedestals
 {
-    public class PedestalUnlocks
+    internal static class PedestalManager
     {
+        private static readonly ConcurrentDictionary<int, byte> Unlocked =
+            new ConcurrentDictionary<int, byte>();
+
         public static bool InMagic;
 
         private static readonly AccessTools.FieldRef<BuildingSpotWorld, ResourceType> ResourceRef =
             AccessTools.FieldRefAccess<BuildingSpotWorld, ResourceType>("resource");
 
-        public static readonly List<Pedestal> All = new List<Pedestal>
+        private static readonly List<Pedestal> All = new List<Pedestal>
         {
             new Pedestal("Berry1", 0, Race.Human),
             new Pedestal("Berry2", 1, Race.Human),
@@ -51,6 +56,26 @@ namespace SfkArchipelago.Pedestals
         private static readonly Dictionary<(Race, string), Pedestal> ByKey =
             All.ToDictionary(p => (p.Race, p.Name));
 
+        public static bool IsUnlocked(Pedestal p)
+        {
+            return Unlocked.ContainsKey(p.Offset);
+        }
+
+        internal static void Handle(ItemInfo item)
+        {
+            var offset = (int)(item.ItemId - ItemIds.Pedestal);
+
+            Unlocked[offset] = 0;
+
+            ArchipelagoClient.AddNotification($"Unlocked pedestal: {item.ItemName}");
+            Plugin.Log.LogInfo($"Unlocked pedestal: {item.ItemName}");
+        }
+
+        internal static void Reset()
+        {
+            Unlocked.Clear();
+        }
+
         public static bool TryGet(Race race, string name, out Pedestal p)
         {
             return ByKey.TryGetValue((race, name), out p);
@@ -59,7 +84,7 @@ namespace SfkArchipelago.Pedestals
         public static void SpawnAllUnlocked()
         {
             foreach (var spot in Object.FindObjectsOfType<BuildingSpotWorld>())
-                if (TryGet(RaceUtils.CurrentRace(), spot.name, out var p) && ArchipelagoClient.IsPedestalUnlocked(p))
+                if (TryGet(RaceUtils.CurrentRace(), spot.name, out var p) && IsUnlocked(p))
                     WorldManager.Instance.SpawnRebuild(spot.transform.position, ResourceRef(spot), true);
         }
     }

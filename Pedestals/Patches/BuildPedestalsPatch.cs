@@ -8,20 +8,20 @@ namespace SfkArchipelago.Pedestals.Patches
     {
         private static void Prefix()
         {
-            PedestalUnlocks.InMagic = true;
+            PedestalManager.InMagic = true;
         }
 
         private static void Postfix()
         {
             if (!ArchipelagoClient.IsConnected()) return;
 
-            PedestalUnlocks.InMagic = false;
-            PedestalUnlocks.SpawnAllUnlocked();
+            PedestalManager.InMagic = false;
+            PedestalManager.SpawnAllUnlocked();
         }
 
         private static void Finalizer()
         {
-            PedestalUnlocks.InMagic = false;
+            PedestalManager.InMagic = false;
         }
     }
 }

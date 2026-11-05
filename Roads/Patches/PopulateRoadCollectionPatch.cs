@@ -10,10 +10,12 @@ namespace SfkArchipelago.Roads.Patches
         [HarmonyPostfix]
         public static void Postfix(Road[] ___roadCollection)
         {
+            if (!ArchipelagoClient.IsConnected()) return;
+
             try
             {
-                RoadUnlocks.SetOrder(RoadGroup.Overland, RoadSorter.Compute(___roadCollection, RoadGroup.Overland));
-                RoadUnlocks.SetOrder(RoadGroup.City, RoadSorter.Compute(___roadCollection, RoadGroup.City));
+                RoadManager.SetOrder(RoadGroup.Overland, RoadSorter.Compute(___roadCollection, RoadGroup.Overland));
+                RoadManager.SetOrder(RoadGroup.City, RoadSorter.Compute(___roadCollection, RoadGroup.City));
             }
             catch (Exception e)
             {

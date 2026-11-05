@@ -8,7 +8,9 @@ namespace SfkArchipelago.Pedestals.Patches
     {
         private static bool Prefix(bool fromSave)
         {
-            return !(PedestalUnlocks.InMagic && fromSave);
+            if (!ArchipelagoClient.IsConnected()) return true;
+
+            return !(PedestalManager.InMagic && fromSave);
         }
     }
 }

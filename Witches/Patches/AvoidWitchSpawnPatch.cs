@@ -8,11 +8,13 @@ namespace SfkArchipelago.Witches.Patches
     {
         public static void Postfix(RaceEvent raceEvent, ref bool __result)
         {
+            if (!ArchipelagoClient.IsConnected()) return;
+
             var id = (int)raceEvent;
             if (id < 91 || id > 100) return; // Not a witch event
 
             var witchIndex = id - 90;
-            __result = witchIndex <= ArchipelagoClient.WitchLevel();
+            __result = witchIndex <= WitchManager.Level;
         }
     }
 }

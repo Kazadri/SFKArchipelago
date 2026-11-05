@@ -8,7 +8,9 @@ namespace SfkArchipelago.Witches.Patches
     {
         public static void Postfix(ref int __result)
         {
-            __result = ArchipelagoClient.WitchLevel();
+            if (!ArchipelagoClient.IsConnected()) return;
+
+            __result = WitchManager.Level;
         }
     }
 }

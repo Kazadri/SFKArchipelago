@@ -19,8 +19,8 @@ namespace SfkArchipelago.Buildings.Patches
             if (!ArchipelagoClient.IsConnected()) return;
 
             var type = building.GetBuildingType();
-            if (!ArchipelagoClient.IsUpgradeManaged(type)) return;
-            if (ArchipelagoClient.IsUpgradeUnlocked(type)) return;
+            if (!UpgradeManager.IsManaged(type)) return;
+            if (UpgradeManager.IsUnlocked(type)) return;
 
             if (building.GetUpgradeAmount() >= ___amountOfUpgrades) return;
 

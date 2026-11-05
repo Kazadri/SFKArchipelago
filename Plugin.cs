@@ -2,6 +2,7 @@
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using SfkArchipelago.Buildings;
 using SfkArchipelago.Races;
 using SuperFantasyKingdom;
 using SuperFantasyKingdom.Buildings;
@@ -77,6 +78,9 @@ namespace SfkArchipelago
             }
         }
 
+        /**
+         * TODO: Move this somewhere else
+         */
         private void HandleBuildingBuilt(BuildingCity building, bool flag)
         {
             try
@@ -85,7 +89,7 @@ namespace SfkArchipelago
 
                 var type = building.GetBuildingType();
                 Logger.LogInfo($"Building : {type} ({(int)type}) is built");
-                ArchipelagoClient.SendBuildingCheck(type);
+                BuildingManager.SendLocation(type);
             }
             catch (Exception e)
             {
@@ -93,6 +97,9 @@ namespace SfkArchipelago
             }
         }
 
+        /**
+         * TODO: Move this somewhere else and remove SendDailyCheck
+         */
         private void OnMorningStart(int day)
         {
             try

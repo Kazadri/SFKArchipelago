@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SfkArchipelago.Roads
 {
-    public static class RoadSorter
+    internal static class RoadSorter
     {
         private static readonly Vector2Int[] Dirs =
         {
@@ -13,7 +13,7 @@ namespace SfkArchipelago.Roads
             new Vector2Int(0, -1), new Vector2Int(-1, 0)
         };
 
-        public static RoadGroup GroupOf(Road road)
+        private static RoadGroup GroupOf(Road road)
         {
             return road.pier != null ? RoadGroup.Pier : road.city ? RoadGroup.City : RoadGroup.Overland;
         }

@@ -1,10 +1,23 @@
 ﻿using System;
+using Archipelago.MultiClient.Net.Models;
 using SuperFantasyKingdom;
 
 namespace SfkArchipelago.Resources
 {
-    public static class ResourceManager
+    internal static class ResourceManager
     {
+        internal static void Handle(ItemInfo item)
+        {
+            var type = NameToType(item.ItemName);
+            if (null == type) return;
+
+            AddResource((ResourceType)type);
+            
+            ArchipelagoClient.AddNotification(
+                $"(Filler) Resource received : {Enum.GetName(typeof(ResourceType), type)}");
+            Plugin.Log.LogInfo($"(Filler) Resource received : {Enum.GetName(typeof(ResourceType), type)}");
+        }
+
         public static ResourceType? NameToType(string resourceName)
         {
             if (!Enum.TryParse(typeof(ResourceType), resourceName, out var type))
@@ -17,7 +30,7 @@ namespace SfkArchipelago.Resources
             return (ResourceType)type;
         }
 
-        public static void AddResource(ResourceType resourceType)
+        private static void AddResource(ResourceType resourceType)
         {
             var instance = SuperFantasyKingdom.ResourceManager.Instance;
 
@@ -28,10 +41,6 @@ namespace SfkArchipelago.Resources
             }
 
             instance.AddResource(resourceType, 1);
-
-            ArchipelagoClient.AddNotification(
-                $"(Filler) Resource received : {Enum.GetName(typeof(ResourceType), resourceType)}");
-            Plugin.Log.LogInfo($"(Filler) Resource received : {Enum.GetName(typeof(ResourceType), resourceType)}");
         }
     }
 }

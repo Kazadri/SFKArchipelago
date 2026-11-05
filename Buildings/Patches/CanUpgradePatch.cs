@@ -14,11 +14,9 @@ namespace SfkArchipelago.Buildings.Patches
 
             var type = __instance.GetBuildingType();
 
-            if (!ArchipelagoClient.IsUpgradeManaged(type)) return;
+            if (!UpgradeManager.IsManaged(type)) return;
 
-            Plugin.Log.LogInfo($"CanBeUpgraded called for {type}");
-
-            __result = ArchipelagoClient.IsUpgradeUnlocked(type);
+            __result = UpgradeManager.IsUnlocked(type);
         }
     }
 }
