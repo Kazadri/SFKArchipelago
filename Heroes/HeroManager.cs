@@ -10,8 +10,7 @@ namespace SfkArchipelago.Heroes
 
         internal static bool IsManaged(Hero hero)
         {
-            return true;
-            // All heroes are managed
+            return true; // All heroes are managed
         }
 
         internal static bool IsUnlocked(Hero hero)

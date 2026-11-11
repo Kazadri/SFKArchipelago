@@ -9,6 +9,7 @@
         Pedestal,
         Witch,
         Castle,
+        Unit,
         Filler,
         Unknown
     }
