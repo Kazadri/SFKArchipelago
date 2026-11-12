@@ -11,14 +11,12 @@ namespace SfkArchipelago.Units.Patches
         public static void Postfix(ref List<string> __result)
         {
             if (!ArchipelagoClient.IsConnected()) return;
-            
+
             var units = new List<string>();
             foreach (var unit in (Unit[])Enum.GetValues(typeof(Unit)))
-            {
                 if (UnitManager.IsUnlocked(unit))
                     units.Add(Enum.GetName(typeof(Unit), unit));
-            }
-            
+
             __result = units;
         }
     }

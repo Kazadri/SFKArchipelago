@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SfkArchipelago
+﻿namespace SfkArchipelago
 {
     internal static class LocationIds
     {

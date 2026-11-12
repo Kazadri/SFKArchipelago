@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
-using SuperFantasyKingdom.Buildings;
 
 namespace SfkArchipelago
 {
@@ -91,7 +90,7 @@ namespace SfkArchipelago
                 Plugin.Log.LogWarning($"Location {id} could not be sent : not connected");
                 return;
             }
-            
+
             session.Locations.CompleteLocationChecks(id);
             Plugin.Log.LogInfo($"Location sent : {id})");
         }

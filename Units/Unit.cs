@@ -53,6 +53,6 @@
         Troll = 48,
         Vampire = 49,
         Werewolf = 50,
-        Yeti = 51,
+        Yeti = 51
     }
 }

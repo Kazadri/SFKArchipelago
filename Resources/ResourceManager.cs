@@ -12,7 +12,7 @@ namespace SfkArchipelago.Resources
             if (null == type) return;
 
             AddResource((ResourceType)type);
-            
+
             ArchipelagoClient.AddNotification(
                 $"(Filler) Resource received : {Enum.GetName(typeof(ResourceType), type)}");
             Plugin.Log.LogInfo($"(Filler) Resource received : {Enum.GetName(typeof(ResourceType), type)}");

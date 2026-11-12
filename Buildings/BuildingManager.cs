@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Archipelago.MultiClient.Net.Models;
 using SuperFantasyKingdom.Buildings;
 
@@ -81,7 +80,7 @@ namespace SfkArchipelago.Buildings
         internal static void SendLocation(BuildingType type)
         {
             if (!IsManaged(type)) return;
-            
+
             ArchipelagoClient.SendLocation((int)type + LocationIds.Building);
         }
 

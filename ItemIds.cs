@@ -10,6 +10,7 @@
         internal const long Witch = 1_007_000;
         internal const long Castle = 1_008_000;
         internal const long Unit = 1_009_000;
+        internal const long Kingdom = 1_010_000;
         internal const long Filler = 2_000_000;
         internal const long End = 3_000_000;
 
@@ -17,6 +18,7 @@
         {
             if (id >= End) return ItemKind.Unknown;
             if (id >= Filler) return ItemKind.Filler;
+            if (id >= Kingdom) return ItemKind.Kingdom;
             if (id >= Unit) return ItemKind.Unit;
             if (id >= Castle) return ItemKind.Castle;
             if (id == Witch) return ItemKind.Witch;

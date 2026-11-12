@@ -10,8 +10,8 @@ namespace SfkArchipelago.Units.Patches
         public static void Postfix(string entity, ref bool __result)
         {
             if (!ArchipelagoClient.IsConnected()) return;
-            
-            Enum.TryParse(typeof(Unit),  entity, out var unit);
+
+            Enum.TryParse(typeof(Unit), entity, out var unit);
             __result = UnitManager.IsUnlocked((Unit)unit);
         }
     }

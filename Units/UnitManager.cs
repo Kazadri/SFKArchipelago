@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Archipelago.MultiClient.Net.Models;
-using SfkArchipelago.Heroes;
 
 namespace SfkArchipelago.Units
 {
     public class UnitManager
     {
         private static readonly ConcurrentDictionary<int, byte> Unlocked = new ConcurrentDictionary<int, byte>();
-        
+
         internal static bool IsManger(string unit)
         {
             return true; // All unit are managed
         }
-        
+
         internal static bool IsUnlocked(Unit unit)
         {
             return Unlocked.ContainsKey((int)unit);
         }
-        
+
         internal static void Handle(ItemInfo item)
         {
             var value = item.ItemId - ItemIds.Unit;
