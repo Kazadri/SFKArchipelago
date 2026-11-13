@@ -8,6 +8,8 @@ namespace SfkArchipelago.Kingdom.Patches
     {
         public static bool Prefix()
         {
+            if (!ArchipelagoClient.IsConnected()) return true;
+            
             return false; // Avoid messing with the save.
         }
     }
