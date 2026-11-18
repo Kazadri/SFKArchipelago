@@ -95,6 +95,25 @@ namespace SfkArchipelago
             Plugin.Log.LogInfo($"Location sent : {id})");
         }
 
+        internal static bool IsLocationChecked(long id)
+        {
+            var session = _session;
+            if (session == null || !IsConnected())
+                return false;
+
+            return session.Locations.AllLocationsChecked.Contains(id);
+        }
+        
+        public static void ScoutWithHint(long locationId)
+        {
+            var session = _session;
+            
+            if (session == null || !IsConnected())
+                return;
+            
+            session.Locations.ScoutLocationsAsync(HintCreationPolicy.CreateAndAnnounceOnce, locationId);
+        }
+
         internal static void SendDailyCheck(int day)
         {
             var session = _session;

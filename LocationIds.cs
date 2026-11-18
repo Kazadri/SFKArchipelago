@@ -4,5 +4,6 @@
     {
         internal const long Building = 1_000_000;
         internal const long Daily = 1_005_000;
+        internal const long Unit = 1_009_000;
     }
 }

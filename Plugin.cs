@@ -35,6 +35,7 @@ namespace SfkArchipelago
             // Events
             CityManager.OnBuildingBuilt += HandleBuildingBuilt;
             DaytimeManager.OnMorningStart += OnMorningStart;
+            DaytimeManager.OnNightStart += OnNightStart;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
 
             Logger.LogInfo("Plugin loaded.");
@@ -58,6 +59,7 @@ namespace SfkArchipelago
         {
             CityManager.OnBuildingBuilt -= HandleBuildingBuilt;
             DaytimeManager.OnMorningStart -= OnMorningStart;
+            DaytimeManager.OnNightStart -= OnNightStart;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
             Logger.LogInfo("Plugin destroyed.");
@@ -96,25 +98,18 @@ namespace SfkArchipelago
                 Logger.LogError(e.ToString());
             }
         }
-
-        /**
-         * TODO: Move this somewhere else and remove SendDailyCheck
-         */
+        
         private void OnMorningStart(int day)
+        {
+            RunVisible = true;
+        }
+        
+        private void OnNightStart(int day)
         {
             try
             {
                 Enum.TryParse(typeof(Hero), MainManager.Instance.GetSelectedHero(), out var hero);
                 var race = RaceUtils.CurrentRace();
-
-                Logger.LogInfo(
-                    $"OnMorningStart: {day} on {Enum.GetName(typeof(Race), race)} - {Enum.GetName(typeof(Hero), hero)}");
-                RunVisible = true;
-                // if (day >= DaytimeManager.Instance.GetDayLimit())
-                // {
-                //     ArchipelagoClient.CompleteGoal();
-                //     return;
-                // }
 
                 if (day > 1) ArchipelagoClient.SendDailyCheck((int)race * 308 + (int)hero * 28 + day - 1);
             }

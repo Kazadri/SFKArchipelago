@@ -7,8 +7,8 @@ namespace SfkArchipelago.Units
     public class UnitManager
     {
         private static readonly ConcurrentDictionary<int, byte> Unlocked = new ConcurrentDictionary<int, byte>();
-
-        internal static bool IsManger(string unit)
+        
+        internal static bool IsManaged(Unit unit)
         {
             return true; // All unit are managed
         }
@@ -31,6 +31,23 @@ namespace SfkArchipelago.Units
             Unlocked[(int)value] = 0;
             ArchipelagoClient.AddNotification($"Unlocked unit: {item.ItemName}");
             Plugin.Log.LogInfo($"Unlocked unit: {item.ItemName}");
+        }
+
+        internal static void SendUnit(Unit unit)
+        {
+            if (!IsManaged(unit)) return;
+            
+            ArchipelagoClient.SendLocation((int) unit + LocationIds.Unit);
+        }
+
+        internal static bool IsUnitSent(Unit unit)
+        {
+            return ArchipelagoClient.IsLocationChecked((int) unit + LocationIds.Unit);
+        }
+
+        internal static void Scout(Unit unit)
+        {
+            ArchipelagoClient.ScoutWithHint((int) unit + LocationIds.Unit);
         }
 
         internal static void Reset()
