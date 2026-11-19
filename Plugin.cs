@@ -67,14 +67,14 @@ namespace SfkArchipelago
 
         private void HandleNotification()
         {
-            // AlertManager is not yet instanced, we cannot send notification.
-            if (AlertManager.Instance == null) return;
-
-            // I can only show notification in a run yet, so display before is useless.
-            if (!RunVisible) return;
-
             while (ArchipelagoClient.Notifications.TryDequeue(out var message))
             {
+                // AlertManager is not yet instanced, we cannot send notification.
+                if (AlertManager.Instance == null) continue;
+
+                // I can only show notification in a run yet, so display before is useless.
+                if (!RunVisible) continue;
+                
                 AlertManager.Instance.DisplayMessage("Archipelago notification", message);
                 Logger.LogInfo($"[Notification] {message}");
             }
