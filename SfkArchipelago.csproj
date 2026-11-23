@@ -59,9 +59,9 @@
         <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.1"/>
         <PackageReference Include="UnityEngine.IMGUIModule" Version="2020.3.1"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <EmbeddedResource Include="Assets\archipelago.png" />
+        <EmbeddedResource Include="Assets\archipelago.png"/>
     </ItemGroup>
 
     <Target Name="CopyToGame" AfterTargets="Build">

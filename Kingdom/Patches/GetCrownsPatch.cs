@@ -9,7 +9,7 @@ namespace SfkArchipelago.Kingdom.Patches
         public static void Postfix(ref int __result)
         {
             if (!ArchipelagoClient.IsConnected()) return;
-            
+
             __result = 0; // Avoid the leveling to appears.
         }
     }

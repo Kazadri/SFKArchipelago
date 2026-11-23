@@ -9,7 +9,6 @@ using SuperFantasyKingdom.Buildings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Hero = SfkArchipelago.Heroes.Hero;
-using Race = SfkArchipelago.Races.Race;
 
 namespace SfkArchipelago
 {
@@ -74,7 +73,7 @@ namespace SfkArchipelago
 
                 // I can only show notification in a run yet, so display before is useless.
                 if (!RunVisible) continue;
-                
+
                 AlertManager.Instance.DisplayMessage("Archipelago notification", message);
                 Logger.LogInfo($"[Notification] {message}");
             }
@@ -98,12 +97,12 @@ namespace SfkArchipelago
                 Logger.LogError(e.ToString());
             }
         }
-        
+
         private void OnMorningStart(int day)
         {
             RunVisible = true;
         }
-        
+
         private void OnNightStart(int day)
         {
             try

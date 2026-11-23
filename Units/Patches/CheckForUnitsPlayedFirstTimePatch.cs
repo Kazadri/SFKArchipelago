@@ -14,11 +14,8 @@ namespace SfkArchipelago.Units.Patches
 
             foreach (var name in __result)
             {
-                if (!Enum.TryParse(typeof(Unit), name, out object unit))
-                {
-                    return; // Hero are considered as a unit. TODO
-                }
-                
+                if (!Enum.TryParse(typeof(Unit), name, out var unit)) continue; // Hero are considered as a unit. TODO
+
                 UnitManager.SendUnit((Unit)unit);
             }
         }

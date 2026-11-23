@@ -21,9 +21,10 @@ namespace SfkArchipelago.Assets
 
                 var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
                 tex.filterMode = FilterMode.Point;
-                ImageConversion.LoadImage(tex, ms.ToArray());
+                tex.LoadImage(ms.ToArray());
 
-                _archipelagoIcon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+                _archipelagoIcon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f),
+                    100f);
                 return _archipelagoIcon;
             }
         }

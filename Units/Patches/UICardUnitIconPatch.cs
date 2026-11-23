@@ -2,6 +2,7 @@
 using SfkArchipelago.Assets;
 using SuperFantasyKingdom.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SfkArchipelago.Units.Patches
 {
@@ -15,13 +16,13 @@ namespace SfkArchipelago.Units.Patches
 
             if (___neverUsed.transform.Find("ArchipelagoIcon") != null) return;
 
-            var text = ___neverUsed.GetComponentInChildren<UnityEngine.UI.Image>(true);
+            var text = ___neverUsed.GetComponentInChildren<Image>(true);
             if (text != null) text.enabled = false;
 
-            var go = new GameObject("ArchipelagoIcon", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+            var go = new GameObject("ArchipelagoIcon", typeof(RectTransform), typeof(Image));
             go.transform.SetParent(___neverUsed.transform, false);
 
-            var img = go.GetComponent<UnityEngine.UI.Image>();
+            var img = go.GetComponent<Image>();
             img.sprite = ModAssets.ArchipelagoIcon;
             img.raycastTarget = false;
             img.preserveAspect = true;
