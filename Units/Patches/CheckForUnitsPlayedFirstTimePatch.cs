@@ -10,7 +10,7 @@ namespace SfkArchipelago.Units.Patches
     {
         public static void Postfix(bool save, List<string> __result)
         {
-            Plugin.Log.LogInfo($"CheckForUnitsPlayedFirstTime called with {save}");
+            if (!ArchipelagoClient.IsConnected()) return;
 
             foreach (var name in __result)
             {

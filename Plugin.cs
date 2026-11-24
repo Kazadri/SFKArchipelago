@@ -110,7 +110,7 @@ namespace SfkArchipelago
                 Enum.TryParse(typeof(Hero), MainManager.Instance.GetSelectedHero(), out var hero);
                 var race = RaceUtils.CurrentRace();
 
-                if (day > 1) ArchipelagoClient.SendDailyCheck((int)race * 308 + (int)hero * 28 + day - 1);
+                ArchipelagoClient.SendDailyCheck((int)race * 308 + (int)hero * 28 + day);
             }
             catch (Exception e)
             {
